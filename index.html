@@ -865,50 +865,46 @@ setTimeout(() => {
 }, 500);
 
 // 4. إصلاح إضافة الطلبات (متوافقة مع نسختك الأصلية 100%)
+// 4. إصلاح إضافة الطلبات (مع القائمة المنسدلة للأسماء وتصليح التاريخ)
 window.addRequest = async function() {
   const itemInput = document.getElementById('req-item');
   const typeInput = document.getElementById('req-type');
   const noteInput = document.getElementById('req-note');
+  const userInput = document.getElementById('req-user'); // 👈 هنا نقرأ الاسم من القائمة
 
   if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
 
-  // صيدة الاسم مباشرة من قوقل عشان ما يطلع undefined
-  const userName = (auth && auth.currentUser && auth.currentUser.displayName) ? auth.currentUser.displayName : 'مستخدم';
+  const selectedUser = userInput ? userInput.value : 'مجهول';
 
   const newReq = {
     id: Date.now(),
     type: typeInput ? typeInput.value : 'طلب عام',
-    item: itemInput.value.trim(),     // تعدلت لـ item عشان تظهر الكلمة
+    item: itemInput.value.trim(),
     note: noteInput ? noteInput.value.trim() : '',
-    user: userName,                   // تعدلت عشان يظهر اسمك
-    status: 'pending',                // ضفنا الحالة عشان يصير "معلق" وما يلغيه
-    date: Date.now()                  // تعدل التاريخ عشان يطلع مرتب
+    user: selectedUser,               // 👈 نحفظ الاسم اللي اخترته (حمود أو أروى)
+    status: 'pending',
+    date: new Date().toISOString()    // 👈 رجعنا صيغة التاريخ عشان ما تطلع لك أرقام غريبة
   };
 
   try {
-    // 1. نضيف الطلب للقائمة
     localData.requests.push(newReq);
     
-    // 2. نحفظ السحابة بدالتك الأصلية
     if(typeof saveToCloud === 'function') {
       await saveToCloud();
     } else if (typeof setDoc === 'function') {
       await setDoc(doc(db, "data", "home"), localData);
     }
 
-    // 3. نحدث الجدول ونمسح الخانات
     if(typeof renderRequests === 'function') renderRequests();
     itemInput.value = '';
     if(noteInput) noteInput.value = '';
     
-    // 4. نطلع رسالة النجاح الخضراء
     if(typeof showToast === 'function') {
       showToast('✅ تم إضافة الطلب بنجاح');
     } else {
       alert('✅ تم إضافة الطلب بنجاح');
     }
 
-    // 5. نشغل الإشعارات (إيميل / واتساب)
     if(typeof sendNotification === 'function') {
       sendNotification('طلب جديد', newReq.user, newReq.item);
     }
