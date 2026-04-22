@@ -860,13 +860,13 @@ setTimeout(() => {
   if(savedTheme) window.setTheme(savedTheme);
 }, 500);
 
-// 4. إصلاح إضافة الطلبات وربطها بقاعدة البيانات
+// 4. إصلاح إضافة الطلبات (متوافقة مع نسختك الأصلية)
 window.addRequest = async function() {
   const itemInput = document.getElementById('req-item');
   const typeInput = document.getElementById('req-type');
   const noteInput = document.getElementById('req-note');
 
-  if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً!'); return; }
+  if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
 
   const newReq = {
     id: Date.now(),
@@ -877,24 +877,35 @@ window.addRequest = async function() {
   };
 
   try {
-    await updateDoc(doc(db, "data", "home"), {
-      requests: arrayUnion(newReq)
-    });
+    // 1. نضيف الطلب للقائمة 
+    localData.requests.push(newReq);
+    
+    // 2. نحفظ السحابة بدالتك الأصلية
+    if(typeof saveToCloud === 'function') {
+      await saveToCloud();
+    } else if (typeof setDoc === 'function') {
+      await setDoc(doc(db, "data", "home"), localData);
+    }
+
+    // 3. نحدث الجدول ونمسح الخانات
+    if(typeof renderRequests === 'function') renderRequests();
     itemInput.value = '';
     if(noteInput) noteInput.value = '';
     
-    // إظهار التنبيه الأخضر في الشاشة
-    const toast = document.getElementById('toast');
-    if(toast) {
-      toast.innerText = '✅ تم إضافة الطلب بنجاح';
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 3000);
+    // 4. نطلع رسالة النجاح الخضراء
+    if(typeof showToast === 'function') {
+      showToast('✅ تم إضافة الطلب بنجاح');
     } else {
       alert('✅ تم إضافة الطلب بنجاح');
     }
+
+    // 5. نشغل الإشعارات (إيميل / واتساب)
+    if(typeof sendNotification === 'function') {
+      sendNotification('طلب جديد', newReq.user, newReq.text);
+    }
   } catch(e) {
     console.error("خطأ:", e);
-    alert('حدث خطأ أثناء الإضافة!');
+    alert('ما زال هناك خطأ، بس هالمرة من النت أو السحابة!');
   }
 };
 </script>
