@@ -335,7 +335,11 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
           <input type="text" id="req-item" placeholder="شنو تبي؟..." class="ac-inp" data-ac="req-item" autocomplete="off" style="flex:1;min-width:120px;"/>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <input type="text" id="req-note" placeholder="ملاحظة (اختياري)..." style="flex:1;"/>
+          <select id="req-user" style="padding:7px 10px; border:0.5px solid var(--border2); border-radius:var(--r-md); background:var(--surface); color:var(--text); font-family:var(--font);">
+  <option value="حمود">حمود</option>
+  <option value="أروى">أروى</option>
+</select>
+<input type="text" id="req-note" placeholder="ملاحظة (اختياري)..." style="flex:1;"/>
          <button class="add-btn" onclick="addRequest()">➕ إضافة الطلبات</button>
         </div>
       </div>
