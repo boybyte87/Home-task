@@ -860,7 +860,7 @@ setTimeout(() => {
   if(savedTheme) window.setTheme(savedTheme);
 }, 500);
 
-// 4. إصلاح إضافة الطلبات (متوافقة مع نسختك الأصلية)
+// 4. إصلاح إضافة الطلبات (متوافقة مع نسختك الأصلية 100%)
 window.addRequest = async function() {
   const itemInput = document.getElementById('req-item');
   const typeInput = document.getElementById('req-type');
@@ -868,16 +868,21 @@ window.addRequest = async function() {
 
   if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
 
+  // صيدة الاسم مباشرة من قوقل عشان ما يطلع undefined
+  const userName = (auth && auth.currentUser && auth.currentUser.displayName) ? auth.currentUser.displayName : 'مستخدم';
+
   const newReq = {
     id: Date.now(),
-    type: typeInput ? typeInput.value : 'طلب',
-    text: itemInput.value.trim() + (noteInput && noteInput.value ? ' - ملاحظة: ' + noteInput.value : ''),
-    user: (currentUser && currentUser.displayName) ? currentUser.displayName : 'مستخدم',
-    date: new Date().toISOString()
+    type: typeInput ? typeInput.value : 'طلب عام',
+    item: itemInput.value.trim(),     // تعدلت لـ item عشان تظهر الكلمة
+    note: noteInput ? noteInput.value.trim() : '',
+    user: userName,                   // تعدلت عشان يظهر اسمك
+    status: 'pending',                // ضفنا الحالة عشان يصير "معلق" وما يلغيه
+    date: Date.now()                  // تعدل التاريخ عشان يطلع مرتب
   };
 
   try {
-    // 1. نضيف الطلب للقائمة 
+    // 1. نضيف الطلب للقائمة
     localData.requests.push(newReq);
     
     // 2. نحفظ السحابة بدالتك الأصلية
@@ -901,11 +906,11 @@ window.addRequest = async function() {
 
     // 5. نشغل الإشعارات (إيميل / واتساب)
     if(typeof sendNotification === 'function') {
-      sendNotification('طلب جديد', newReq.user, newReq.text);
+      sendNotification('طلب جديد', newReq.user, newReq.item);
     }
   } catch(e) {
     console.error("خطأ:", e);
-    alert('ما زال هناك خطأ، بس هالمرة من النت أو السحابة!');
+    alert('حدث خطأ أثناء الاتصال بالسحابة!');
   }
 };
 </script>
