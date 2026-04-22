@@ -428,14 +428,14 @@ const WA_API_HAMOUD = '5745517';
 const WA_PHONE_ARWA = '+965YYYYYYYY'; // استبدل برقم أروى لاحقاً
 const WA_API_ARWA = 'YOUR_API_KEY_2'; // استبدل بمفتاح أروى لاحقاً
 
-function sendWhatsApp(message) {
+function sendWhatsApp(message, target = 'both') {
   try {
     var encodedMessage = encodeURIComponent(message);
-    if(WA_PHONE_HAMOUD && WA_PHONE_HAMOUD !== '+965XXXXXXXX') {
+    if((target === 'both' || target === 'حمود') && WA_PHONE_HAMOUD && WA_PHONE_HAMOUD !== '+965XXXXXXXX') {
       var url1 = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(WA_PHONE_HAMOUD)}&text=${encodedMessage}&apikey=${WA_API_HAMOUD}`;
-      new Image().src = url1; // ميزة تجاوز الحماية (Image Hack)
+      new Image().src = url1;
     }
-    if(WA_PHONE_ARWA && WA_PHONE_ARWA !== '+965YYYYYYYY') {
+    if((target === 'both' || target === 'أروى') && WA_PHONE_ARWA && WA_PHONE_ARWA !== '+965YYYYYYYY') {
       var url2 = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(WA_PHONE_ARWA)}&text=${encodedMessage}&apikey=${WA_API_ARWA}`;
       new Image().src = url2;
     }
@@ -443,9 +443,10 @@ function sendWhatsApp(message) {
 }
 
 const PINS = { 'حمود': '2580', 'أروى': '223223' };
-const TASK_CATS = ['نشاط منزلي', 'نشاط اجتماعي', 'ترفيه', 'دراسة', 'عمل', 'أخرى'];
+const TASK_CATS = ['الكل', 'نشاط منزلي', 'نشاط اجتماعي', 'ترفيه', 'دراسة', 'عمل', 'أخرى'];
 let unlockedTabs = { حمود: false, أروى: false };
 let currentPinTarget = null;
+let activeTaskCat = { حمود: 'الكل', أروى: 'الكل' };
 let localData={inventory:[],requests:[],shopping:[],tasks:{حمود:[],أروى:[]},pendingTasks:{حمود:[],أروى:[]}};
 let currentUser=null, unsub=null;
 let invSort=0, editingInv=null, editingShop=null, editingReq=null;
@@ -527,7 +528,7 @@ async function initData(){
 
 function fmt(n){ return Math.round(n*100)/100; }
 function todayStr(){ return new Date().toLocaleDateString('ar-KW'); }
-function timeStr(){ return new Date().toLocaleTimeString('ar-KW',{hour:'2-digit',minute:'2-digit'}); }
+function dateTimeStr(){ return new Date().toLocaleString('ar-KW', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}); }
 function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 function showToast(msg){
@@ -587,50 +588,72 @@ window.checkPin = function() {
   }
 };
 
-document.addEventListener('DOMContentLoaded', function() {
-  var pinInp = document.getElementById('pin-input');
-  if (pinInp) { pinInp.addEventListener('keypress', function(e) { if (e.key === 'Enter') checkPin(); }); }
-});
+window.setTaskCat = function(person, cat) {
+  activeTaskCat[person] = cat;
+  renderTasks(person);
+};
 
 function renderTasks(person) {
   var tasks = localData.tasks[person] || [];
   var contentEl = document.getElementById('tasks-' + person.replace('حمود', 'hamoud').replace('أروى', 'arwa') + '-content');
   if (!contentEl) return;
+  
   var total = tasks.length, done = tasks.filter(t => t.status === 'منجز').length, pending = tasks.filter(t => t.status === 'معلق').length;
   var html = '<div class="stat-grid"><div class="stat-card"><div class="stat-label">إجمالي</div><div class="stat-val">' + total + '</div></div><div class="stat-card"><div class="stat-label">منجزة</div><div class="stat-val sv-green">' + done + '</div></div><div class="stat-card"><div class="stat-label">معلقة</div><div class="stat-val sv-amber">' + pending + '</div></div></div>';
-  TASK_CATS.forEach(function(cat) {
-    var catTasks = tasks.filter(t => t.category === cat);
-    if (catTasks.length === 0) return;
-    html += '<div class="box"><div class="box-head"><span class="box-title">' + cat + '</span></div>';
-    catTasks.forEach(function(task) {
-      var prClass = task.priority === 'عاجل' ? 'pr-urgent' : task.priority === 'مهم' ? 'pr-important' : 'pr-normal';
-      var stClass = task.status === 'منجز' ? 'sb-done' : task.status === 'مؤجل' ? 'sb-cancelled' : 'sb-pending';
-      html += '<div class="irow"><div class="irow-left"><div class="irow-info"><div class="irow-name">' + escH(task.name) + ' <span class="priority-badge ' + prClass + '">' + task.priority + '</span></div><div class="irow-sub"><span class="status-badge ' + stClass + '">' + task.status + '</span></div></div></div><div class="irow-right"><button class="icon-btn" style="color:var(--green);font-size:11px;" onclick="toggleTaskStatus(\'' + person + '\',' + task.id + ')">' + (task.status === 'منجز' ? '↩️' : '✓') + '</button><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteTask(\'' + person + '\',' + task.id + ')">🗑️</button></div></div>';
-    });
-    html += '</div>';
+  
+  html += '<div class="cat-filters">';
+  TASK_CATS.forEach(c => {
+    html += `<button class="cat-pill${c === activeTaskCat[person] ? ' active' : ''}" onclick="setTaskCat('${person}', '${c}')">${c}</button>`;
   });
-  html += '<div class="box"><div class="box-head"><span class="box-title">+ إضافة مهمة</span></div><div class="add-row" style="flex-direction:column;gap:8px;"><input type="text" id="new-task-' + person + '" placeholder="اسم المهمة..." style="width:100%;"/><div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;"><select id="new-cat-' + person + '" style="flex:1;">' + TASK_CATS.map(c => '<option>' + c + '</option>').join('') + '</select><select id="new-priority-' + person + '" style="max-width:100px;"><option>عادي</option><option>مهم</option><option>عاجل</option></select><button class="add-btn" onclick="addTask(\'' + person + '\')">+ إضافة</button></div></div></div>';
+  html += '</div>';
+
+  var filteredTasks = activeTaskCat[person] === 'الكل' ? tasks : tasks.filter(t => t.category === activeTaskCat[person]);
+
+  html += '<div class="box"><div class="box-head"><span class="box-title">📋 قائمة المهام (' + activeTaskCat[person] + ')</span></div>';
+  if (filteredTasks.length === 0) {
+    html += '<div class="empty">ما في مهام في هذا القسم</div>';
+  } else {
+    filteredTasks.forEach(function(task) {
+      var prClass = task.priority === 'عاجل' ? 'pr-urgent' : task.priority === 'مهم' ? 'pr-important' : 'pr-normal';
+      var stClass = task.status === 'منجز' ? 'sb-done' : 'sb-pending';
+      html += '<div class="irow"><div class="irow-left"><div class="irow-info"><div class="irow-name">' + escH(task.name) + ' <span class="priority-badge ' + prClass + '">' + task.priority + '</span></div><div class="irow-sub"><span class="status-badge ' + stClass + '">' + task.status + '</span> • مضافة: ' + (task.addedAt || 'غير معروف') + (task.doneAt ? ' • تم الإنجاز: ' + task.doneAt : '') + '</div></div></div><div class="irow-right"><button class="icon-btn" style="color:var(--green);font-size:11px;" onclick="toggleTaskStatus(\'' + person + '\',' + task.id + ')">' + (task.status === 'منجز' ? '↩️' : '✓') + '</button><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteTask(\'' + person + '\',' + task.id + ')">🗑️</button></div></div>';
+    });
+  }
+  html += '</div>';
+  
+  html += '<div class="box"><div class="box-head"><span class="box-title">+ إضافة مهمة جديدة</span></div><div class="add-row" style="flex-direction:column;gap:8px;"><input type="text" id="new-task-' + person + '" placeholder="اسم المهمة..." style="width:100%;"/><div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;"><select id="new-cat-' + person + '" style="flex:1;">' + TASK_CATS.filter(c=>c!=='الكل').map(c => '<option>' + c + '</option>').join('') + '</select><select id="new-priority-' + person + '" style="max-width:100px;"><option>عادي</option><option>مهم</option><option>عاجل</option></select><button class="add-btn" onclick="addTask(\'' + person + '\')">+ إضافة</button></div></div></div>';
   contentEl.innerHTML = html;
 }
 
 window.addTask = function(person) {
   var name = document.getElementById('new-task-' + person).value.trim(), cat = document.getElementById('new-cat-' + person).value, priority = document.getElementById('new-priority-' + person).value;
   if (!name) return;
-  localData.tasks[person].push({ id: Date.now(), name: name, category: cat, priority: priority, status: 'معلق', createdAt: new Date().toISOString() });
+  var now = dateTimeStr();
+  localData.tasks[person].push({ id: Date.now(), name: name, category: cat, priority: priority, status: 'معلق', addedAt: now, doneAt: null });
   document.getElementById('new-task-' + person).value = '';
   saveToCloud(); renderTasks(person); showToast('✅ تمت الإضافة');
-  var waTaskMsg = '📝 *مهمة جديدة لـ ' + person + '*\nالمهمة: ' + name + '\nالتصنيف: ' + cat + '\nالأهمية: ' + priority;
-  sendWhatsApp(waTaskMsg);
+  var waTaskMsg = '📝 *مهمة جديدة لـ ' + person + '*\nالمهمة: ' + name + '\nالتصنيف: ' + cat + '\nالأهمية: ' + priority + '\nالوقت: ' + now;
+  sendWhatsApp(waTaskMsg, person);
 };
 
 window.toggleTaskStatus = function(person, id) {
   var task = localData.tasks[person].find(t => t.id === id); if (!task) return;
   task.status = task.status === 'منجز' ? 'معلق' : 'منجز';
-  if (task.status === 'منجز') task.completedAt = new Date().toISOString();
+  task.doneAt = task.status === 'منجز' ? dateTimeStr() : null;
   saveToCloud(); renderTasks(person);
 };
 
 window.deleteTask = function(person, id) { customConfirm('حذف هذه المهمة؟', function() { localData.tasks[person] = localData.tasks[person].filter(t => t.id !== id); saveToCloud(); renderTasks(person); }); };
+
+window.startEditShop = function(id) { editingShop = id; renderShopping(); };
+window.cancelEditShop = function() { editingShop = null; renderShopping(); };
+window.saveEditShop = function(id) {
+  var item = localData.shopping.find(s => s.id === id); if (!item) return;
+  item.name = document.getElementById('es-name-'+id).value.trim() || item.name;
+  item.qty = parseFloat(document.getElementById('es-qty-'+id).value) || 1;
+  item.price = parseFloat(document.getElementById('es-price-'+id).value) || 0;
+  editingShop = null; saveToCloud(); renderShopping();
+};
 
 window.startEditReq = function(id) { editingReq = id; renderRequests(); };
 window.cancelEditReq = function() { editingReq = null; renderRequests(); };
@@ -683,7 +706,7 @@ function renderInventory(){
     var qclass=i.qty===0?'qty-low':i.qty<=i.minQty?'qty-med':'qty-ok';
     if(editingInv===i.id){
       var catOpts=CATS_OPT.map(c=>`<option${c===i.cat?' selected':''}>${c}</option>`).join('');
-      return `<div class="edit-row"><input type="text" id="ei-emoji-${i.id}" value="${escH(i.emoji)}" style="max-width:50px;text-align:center;"/><input type="text" id="ei-name-${i.id}" value="${escH(i.name)}" style="flex:1;min-width:80px;"/><select id="ei-cat-${i.id}">${catOpts}</select><input type="number" id="ei-qty-${i.id}" value="${i.qty}" placeholder="الكمية" style="max-width:70px;" min="0"/><input type="number" id="ei-min-${i.id}" value="${i.minQty}" placeholder="حد التنبيه" style="max-width:80px;" min="0"/><button class="save-btn" onclick="saveEditInv(${i.id})">حفظ ✓</button><button class="cancel-btn2" onclick="cancelEditInv()">إلغاء</button></div>`;
+      return `<div class="edit-row"><input type="text" id="ei-emoji-${i.id}" value="${escH(i.emoji)}" style="max-width:50px;text-align:center;"/><input type="text" id="ei-name-${i.id}" value="${escH(i.name)}" style="flex:1;min-width:80px;"/><select id="ei-cat-${i.id}">${catOpts}</select><input type="number" id="ei-qty-${i.id}" value="${i.qty}" placeholder="الكمية" style="max-width:70px;" min="0"/><input type="number" id="ei-min-${i.id}" value="${i.minQty}" placeholder="حد التنبيه" style="max-width:80px;" min="0"/><button class="save-btn" onclick="saveEditInv(${i.id})">✓</button><button class="cancel-btn2" onclick="cancelEditInv()">✕</button></div>`;
     }
     return `<div class="irow" onclick="startEditInv(${i.id})"><div class="irow-left"><span class="irow-emoji">${escH(i.emoji)}</span><div class="irow-info"><div class="irow-name">${escH(i.name)}</div><div class="irow-sub">${escH(i.cat)}</div></div></div><div class="irow-right"><div class="qty-ctrl" onclick="event.stopPropagation()"><button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button><span class="qty-num qty-badge ${qclass}">${i.qty}</span><button class="qty-btn" onclick="changeQty(${i.id},+1)">+</button></div><button class="icon-btn" style="font-size:11px;" onclick="event.stopPropagation();addToShopping(${i.id})">🛒</button><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="event.stopPropagation();deleteInventory(${i.id})">🗑️</button></div></div>`;
   }).join('');
@@ -762,7 +785,12 @@ function renderShopping(){
   document.getElementById('shop-total').textContent=total; document.getElementById('shop-done').textContent=done; document.getElementById('shop-cost').textContent=fmt(cost)+' د.ك';
   var el=document.getElementById('shop-list'); if(total===0){ el.innerHTML='<div class="empty">قائمة التسوق فارغة</div>'; return; }
   var pending=localData.shopping.filter(s=>!s.bought), bought=localData.shopping.filter(s=>s.bought), all=[...pending,...bought];
-  el.innerHTML=all.map(function(s){ return `<div class="irow" style="${s.bought?'opacity:0.5;text-decoration:line-through;':''}"><div class="irow-left" onclick="toggleBought(${s.id})" style="cursor:pointer;"><span class="irow-emoji">${s.bought?'✅':'🛒'}</span><div class="irow-info"><div class="irow-name">${escH(s.name)}</div><div class="irow-sub">الكمية: ${s.qty}${s.price>0?' • '+fmt(s.price*s.qty)+' د.ك':''}</div></div></div><div class="irow-right"><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteShopItem(${s.id})">🗑️</button></div></div>`; }).join('');
+  el.innerHTML=all.map(function(s){
+    if(editingShop === s.id) {
+      return `<div class="edit-row"><input type="text" id="es-name-${s.id}" value="${escH(s.name)}" style="flex:1;"/><input type="number" id="es-qty-${s.id}" value="${s.qty}" style="max-width:70px;"/><input type="number" id="es-price-${s.id}" value="${s.price}" style="max-width:90px;"/><button class="save-btn" onclick="saveEditShop(${s.id})">✓</button><button class="cancel-btn2" onclick="cancelEditShop()">✕</button></div>`;
+    }
+    return `<div class="irow" style="${s.bought?'opacity:0.5;text-decoration:line-through;':''}"><div class="irow-left" onclick="toggleBought(${s.id})" style="cursor:pointer;"><span class="irow-emoji">${s.bought?'✅':'🛒'}</span><div class="irow-info"><div class="irow-name">${escH(s.name)}</div><div class="irow-sub">الكمية: ${s.qty}${s.price>0?' • '+fmt(s.price*s.qty)+' د.ك':''}</div></div></div><div class="irow-right"><button class="icon-btn" onclick="startEditShop(${s.id})">✏️</button><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteShopItem(${s.id})">🗑️</button></div></div>`; 
+  }).join('');
 }
 
 function renderAll(){ renderInventory(); renderRequests(); renderShopping(); }
