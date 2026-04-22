@@ -863,7 +863,7 @@ setTimeout(() => {
   if(savedTheme) window.setTheme(savedTheme);
 }, 500);
 
-// 4. إصلاح إضافة الطلبات (التاريخ المرتب والأسماء بدون undefined)
+// 4. الدالة النهائية (فصل التاريخ عن الوقت + إظهار الاسم غصب)
 window.addRequest = async function() {
   const itemInput = document.getElementById('req-item');
   const typeInput = document.getElementById('req-type');
@@ -872,21 +872,26 @@ window.addRequest = async function() {
 
   if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
 
-  // تنسيق التاريخ عشان يطلع كشخة (مثال: 22/4/2026, 10:30 م)
-  const prettyDate = new Date().toLocaleString('ar-KW', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+  // فصلنا الوقت عن التاريخ عشان رسامك المزاجي ما يكررهم
+  const now = new Date();
+  const justDate = now.toLocaleDateString('ar-KW'); 
+  const justTime = now.toLocaleTimeString('ar-KW', {hour: '2-digit', minute:'2-digit'});
 
-  // نجهز الطلب بكل المتغيرات الممكنة عشان الكود القديم ما يضيع
+  // صيدة الاسم (وإذا ما لقى القائمة المنسدلة بيكتب بدون اسم عشان نعرف الخلل)
+  const selectedUser = (userInput && userInput.value) ? userInput.value : 'بدون اسم';
+
+  // هذي الحزمة تلبي كل طلبات الرسام مالك عشان ما يخفي شي
   const newReq = {
     id: Date.now(),
     type: typeInput ? typeInput.value : 'طلب عام',
     item: itemInput.value.trim(),
-    text: itemInput.value.trim(), 
-    note: (noteInput && noteInput.value.trim() !== '') ? noteInput.value.trim() : 'بدون ملاحظات',
-    user: userInput ? userInput.value : 'مجهول',
-    userName: userInput ? userInput.value : 'مجهول',
-    status: 'pending',
-    date: prettyDate,
-    time: prettyDate
+    text: itemInput.value.trim(), // حطيناها مرتين احتياط
+    note: (noteInput && noteInput.value.trim() !== '') ? noteInput.value.trim() : 'لا يوجد',
+    user: selectedUser,
+    userName: selectedUser,       // حطيناها مرتين احتياط
+    date: justDate,               // التاريخ بروحه
+    time: justTime,               // الوقت بروحه
+    status: 'pending'
   };
 
   try {
@@ -900,7 +905,6 @@ window.addRequest = async function() {
 
     if(typeof renderRequests === 'function') renderRequests();
     
-    // تنظيف الخانات بعد الإضافة
     itemInput.value = '';
     if(noteInput) noteInput.value = '';
     
@@ -911,7 +915,7 @@ window.addRequest = async function() {
     }
 
     if(typeof sendNotification === 'function') {
-      sendNotification('طلب جديد', newReq.user, newReq.item);
+      sendNotification('طلب جديد', selectedUser, newReq.item);
     }
   } catch(e) {
     console.error("خطأ:", e);
