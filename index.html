@@ -273,9 +273,9 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
     <button class="main-tab" id="tab-shopping" onclick="switchTab('shopping')">🛒 التسوق</button>
     <button class="main-tab" id="tab-tasks-hamoud" onclick="unlockTab('حمود')">📝 مهام حمود <span id="badge-hamoud"></span></button>
     <button class="main-tab" id="tab-tasks-arwa" onclick="unlockTab('أروى')">📝 مهام أروى <span id="badge-arwa"></span></button>
+    <button class="main-tab" onclick="document.getElementById('bg-upload').click()">🖼️ خلفية</button>
+    <input type="file" id="bg-upload" style="display:none" onchange="uploadBackground(event)" accept="image/*">
   </div>
-<button class="main-tab" onclick="document.getElementById('bg-upload').click()">🖼️ خلفية</button>
-<input type="file" id="bg-upload" style="display:none" onchange="uploadBackground(event)" accept="image/*">
   
   <div class="page active" id="page-inventory">
     <div style="height:14px"></div>
@@ -322,6 +322,7 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
       <div class="stat-card"><div class="stat-label">منجزة اليوم</div><div class="stat-val sv-green" id="req-done">0</div></div>
       <div class="stat-card"><div class="stat-label">إجمالي الطلبات</div><div class="stat-val" id="req-total">0</div></div>
     </div>
+    
     <div class="box">
       <div class="box-head"><span class="box-title">✨ طلب جديد</span></div>
       <div class="add-row" style="flex-direction:column;gap:8px;">
@@ -343,7 +344,7 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
           <button class="add-btn" onclick="addRequest()">➕ إضافة الطلب</button>
         </div>
       </div>
-    <div class="box">
+    </div> <div class="box">
       <div class="box-head">
         <span class="box-title">📋 قائمة الطلبات</span>
         <button class="icon-btn" onclick="clearDoneRequests()">مسح المنجزة</button>
@@ -404,7 +405,39 @@ gProvider.setCustomParameters({prompt:'select_account'});
 
 const EJS_SVC='service_8umlngb', EJS_TPL='template_b712oer', EJS_KEY='EmfI9mvmjhSn8x3ey';
 
-// 2. دوال التنبيهات والواتساب
+// 2. الدلع الإلكتروني (تغيير الخلفية والثيمات)
+window.uploadBackground = function(e) {
+  const file = e.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      document.body.style.backgroundImage = `url('${ev.target.result}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundAttachment = 'fixed';
+      localStorage.setItem('custom-bg', ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+window.setTheme = function(t) {
+  document.body.className = t === 'light' ? '' : 'theme-' + t;
+  localStorage.setItem('kit-theme', t);
+};
+
+// تشغيل الألوان والخلفية فوراً عند فتح البرنامج
+setTimeout(() => {
+  const savedBg = localStorage.getItem('custom-bg');
+  if(savedBg) {
+    document.body.style.backgroundImage = `url('${savedBg}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+  }
+  const savedTheme = localStorage.getItem('kit-theme');
+  if(savedTheme) window.setTheme(savedTheme);
+}, 100);
+
+// 3. دوال التنبيهات والواتساب
 async function sendNotification(type, fromName, message){
   try{
     var line='━━━━━━━━━━━━━━━━━━━';
@@ -439,7 +472,7 @@ function sendWhatsApp(message, target = 'both') {
   } catch(e) { console.log('WhatsApp error:', e); }
 }
 
-// 3. دوال تسجيل الدخول والخروج (النسخة المصححة)
+// 4. دوال تسجيل الدخول والخروج 
 window.signInWithGoogle=async function(){ 
   try{ 
     await signInWithPopup(auth,gProvider); 
@@ -740,12 +773,37 @@ window.shareShoppingList=function(){
   window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
-window.addRequest=async function(){
-  var type=document.getElementById('req-type').value, item=document.getElementById('req-item').value.trim(), note=document.getElementById('req-note').value.trim();
-  if(!item)return;
-  var req={id:Date.now(),type,item,note,from:currentUser.displayName||'أحد',status:'pending',time:timeStr(),date:todayStr()};
-  localData.requests.unshift(req); document.getElementById('req-item').value=''; document.getElementById('req-note').value='';
-  await saveToCloud(); renderRequests(); showToast('📤 تم إرسال الطلب');
+// 5. دالة إضافة الطلبات (الصحية 100%)
+window.addRequest = async function(){
+  var type = document.getElementById('req-type').value;
+  var item = document.getElementById('req-item').value.trim();
+  var note = document.getElementById('req-note').value.trim();
+  var userSelect = document.getElementById('req-user');
+  
+  if(!item) { showToast('⚠️ اكتب الطلب أولاً'); return; }
+  
+  var selectedUser = userSelect ? userSelect.value : (currentUser ? currentUser.displayName : 'مجهول');
+  var now = new Date();
+  
+  var req = {
+    id: Date.now(),
+    type: type,
+    item: item,
+    note: note,
+    from: selectedUser, // 👈 السر كله كان في هالكلمة!
+    status: 'pending',
+    time: now.toLocaleTimeString('ar-KW', {hour: '2-digit', minute:'2-digit'}),
+    date: now.toLocaleDateString('ar-KW')
+  };
+  
+  localData.requests.unshift(req);
+  document.getElementById('req-item').value=''; 
+  document.getElementById('req-note').value='';
+  
+  await saveToCloud(); 
+  renderRequests(); 
+  showToast('✅ تم إضافة الطلب بنجاح');
+  
   await sendNotification('طلب جديد: '+type, req.from, item+(note?' — '+note:''));
   var waMessage = '🏠 *طلب جديد في بيتنا*\nالنوع: ' + type + '\nالتفاصيل: ' + item + (note?'\nملاحظة: '+note:'') + '\nبواسطة: ' + req.from;
   sendWhatsApp(waMessage);
@@ -767,6 +825,7 @@ function renderRequests(){
   el.innerHTML=localData.requests.map(function(r){
     if (editingReq === r.id) { return '<div class="req-card"><div class="edit-row" style="padding:12px 15px;"><select id="er-type-' + r.id + '" style="max-width:120px;"><option' + (r.type === 'وجبة' ? ' selected' : '') + '>وجبة</option><option' + (r.type === 'سناك' ? ' selected' : '') + '>سناك</option><option' + (r.type === 'مشروب' ? ' selected' : '') + '>مشروب</option><option' + (r.type === 'طلب عام' ? ' selected' : '') + '>طلب عام</option></select><input type="text" id="er-item-' + r.id + '" value="' + escH(r.item) + '" style="flex:1;min-width:100px;"/><input type="text" id="er-note-' + r.id + '" value="' + escH(r.note) + '" placeholder="ملاحظة" style="flex:1;min-width:80px;"/><button class="save-btn" onclick="saveEditReq(' + r.id + ')">✓</button><button class="cancel-btn2" onclick="cancelEditReq()">✕</button></div></div>'; }
     var stClass=r.status==='pending'?'sb-pending':r.status==='done'?'sb-done':'sb-cancelled', stText=r.status==='pending'?'معلق':r.status==='done'?'منجز':'ملغي';
+    // 👈 هنا الرسام مالك كان يطلب .from مو .user
     return `<div class="req-card"><div class="req-head"><div class="req-info"><div class="req-title">${TYPE_EMOJI[r.type]||'📝'} ${escH(r.item)}</div><div class="req-meta">من: ${escH(r.from)} • ${r.time} • ${r.date}${r.note?' • '+escH(r.note):''} <span class="status-badge ${stClass}">${stText}</span></div></div><div class="req-actions">${r.status==='pending'?`<button class="req-btn" onclick="startEditReq(${r.id})">✏️</button><button class="req-btn accept" onclick="updateRequest(${r.id},'done')">✅</button><button class="req-btn reject" onclick="updateRequest(${r.id},'cancelled')">❌</button>`:''}<button class="req-btn" onclick="deleteRequest(${r.id})">🗑️</button></div></div></div>`;
   }).join('');
 }
@@ -828,108 +887,7 @@ function setupAC(){
 }
 
 document.getElementById('search-inv').addEventListener('input',renderInventory);
-  // --- حزمة إصلاحات الدلع الإلكتروني ---
 
-// 1. دالة تغيير الخلفية
-window.uploadBackground = function(e) {
-  const file = e.target.files[0];
-  if(file){
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-      document.body.style.backgroundImage = `url('${ev.target.result}')`;
-      document.body.style.backgroundSize = 'cover';
-      document.body.style.backgroundAttachment = 'fixed';
-      localStorage.setItem('custom-bg', ev.target.result);
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-// 2. إصلاح الألوان (الثيمات)
-window.setTheme = function(t) {
-  document.body.className = t === 'light' ? '' : 'theme-' + t;
-  localStorage.setItem('kit-theme', t);
-};
-
-// 3. تشغيل الألوان والخلفية فوراً عند فتح البرنامج
-setTimeout(() => {
-  const savedBg = localStorage.getItem('custom-bg');
-  if(savedBg) {
-    document.body.style.backgroundImage = `url('${savedBg}')`;
-    document.body.style.backgroundSize = 'cover';
-    document.body.style.backgroundAttachment = 'fixed';
-  }
-  const savedTheme = localStorage.getItem('kit-theme');
-  if(savedTheme) window.setTheme(savedTheme);
-}, 500);
-
-// 4. الدالة النهائية (الضربة القاضية للاسم والتاريخ)
-window.addRequest = async function() {
-  const itemInput = document.getElementById('req-item');
-  const typeInput = document.getElementById('req-type');
-  const noteInput = document.getElementById('req-note');
-  const userInput = document.getElementById('req-user');
-
-  if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
-
-  // صيدة الاسم بالقوة (نقرا النص اللي طالع بالشاشة مو القيمة المخفية)
-  let selectedUser = 'حمود'; // احتياط أمني
-  if (userInput && userInput.selectedIndex >= 0) {
-    selectedUser = userInput.options[userInput.selectedIndex].text;
-  }
-
-  const now = new Date();
-  const justDate = now.toLocaleDateString('ar-KW'); 
-  const justTime = now.toLocaleTimeString('ar-KW', {hour: '2-digit', minute:'2-digit'});
-
-  // حطينا الاسم بكل المتغيرات الممكنة عشان الكود القديم يلقاها وهو يضحك
-  const newReq = {
-    id: Date.now(),
-    type: typeInput ? typeInput.value : 'طلب عام',
-    item: itemInput.value.trim(),
-    text: itemInput.value.trim(),
-    note: (noteInput && noteInput.value.trim() !== '') ? noteInput.value.trim() : 'لا يوجد',
-    
-    // القصف العشوائي للاسم ههههه
-    user: selectedUser,
-    userName: selectedUser,
-    name: selectedUser,
-    by: selectedUser,
-    author: selectedUser,
-    
-    date: justDate,
-    time: justTime,
-    status: 'pending'
-  };
-
-  try {
-    localData.requests.push(newReq);
-    
-    if(typeof saveToCloud === 'function') {
-      await saveToCloud();
-    } else if (typeof setDoc === 'function') {
-      await setDoc(doc(db, "data", "home"), localData);
-    }
-
-    if(typeof renderRequests === 'function') renderRequests();
-    
-    itemInput.value = '';
-    if(noteInput) noteInput.value = '';
-    
-    if(typeof showToast === 'function') {
-      showToast('✅ تم إضافة الطلب بنجاح');
-    } else {
-      alert('✅ تم إضافة الطلب بنجاح');
-    }
-
-    if(typeof sendNotification === 'function') {
-      sendNotification('طلب جديد', selectedUser, newReq.item);
-    }
-  } catch(e) {
-    console.error("خطأ:", e);
-    alert('حدث خطأ أثناء الاتصال بالسحابة!');
-  }
-};
 </script>
 </body>
 </html>
