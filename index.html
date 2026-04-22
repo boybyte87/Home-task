@@ -386,7 +386,7 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, setDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
 const firebaseConfig={apiKey:"AIzaSyDMSFTbFGetq1WsCo-mVsNUbHVcqhC4Tow",authDomain:"budget-home-1.firebaseapp.com",projectId:"budget-home-1",storageBucket:"budget-home-1.firebasestorage.app",messagingSenderId:"1082972153053",appId:"1:1082972153053:web:ba31f2c4da3cf95e35e734"};
@@ -396,9 +396,11 @@ const auth=getAuth(fbApp);
 const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:'select_account'});
 
-let currentUser=null, unsub=null, localData={inventory:[],requests:[],shopping:[]};
+// --- المتغيرات الأساسية (لازم تكون مطابقة لكودك القديم) ---
+let currentUser=null, unsub=null;
+let localData={inventory:[],requests:[],shopping:[],tasks:{حمود:[],أروى:[]}};
 
-// --- ميزة تغيير الخلفية ---
+// --- ميزة تغيير الخلفية (الدلع الجديد) ---
 window.uploadBackground = (e) => {
   const file = e.target.files[0];
   if (file) {
@@ -413,43 +415,45 @@ window.uploadBackground = (e) => {
   }
 };
 
-window.setTheme = (t) => {
-  document.body.className = 'theme-' + t;
-  localStorage.setItem('kit-theme', t);
-};
+// --- تطبيق الثيم والخلفية المحفوظة ---
+(function initApp(){
+  const savedBg = localStorage.getItem('custom-bg');
+  if(savedBg) {
+    document.body.style.backgroundImage = `url('${savedBg}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+  }
+})();
 
-// --- عرض البيانات (الرسم) ---
-window.renderAll = () => {
-  renderRequests();
-  // هنا تقدر تضيف renderInventory() وغيرها لو حبيت نرجعهم كاملين
-};
+// --- دالة إضافة الطلب (تم إصلاحها لتعمل مع Netlify) ---
+window.addRequest = async function() {
+  const itemInput = document.getElementById('req-item');
+  const typeInput = document.getElementById('req-type');
+  const noteInput = document.getElementById('req-note');
+  
+  if(!itemInput.value.trim() || !currentUser) return;
 
-function renderRequests() {
-  const cont = document.getElementById('requests-list');
-  if(!cont) return;
-  cont.innerHTML = localData.requests.map(r => `
-    <div class="card">
-      <p>${r.text}</p>
-      <small>من: ${r.user} | ${new Date(r.date).toLocaleDateString('ar-KW')}</small>
-    </div>
-  `).join('');
-}
+  const newReq = {
+    id: Date.now(),
+    type: typeInput.value,
+    item: itemInput.value.trim(),
+    note: noteInput.value.trim(),
+    user: currentUser.displayName,
+    status: 'معلق',
+    date: new Date().toISOString()
+  };
 
-// --- إضافة طلب ---
-window.addRequest = async () => {
-  const input = document.getElementById('req-input');
-  const val = input.value.trim();
-  if(!val || !currentUser) return;
   try {
     await updateDoc(doc(db, "data", "home"), {
-      requests: arrayUnion({ id: Date.now(), text: val, user: currentUser.displayName, date: new Date().toISOString() })
+      requests: arrayUnion(newReq)
     });
-    input.value = '';
-    alert("✅ تم إضافة الطلب بنجاح");
-  } catch(err) { console.error(err); }
+    itemInput.value = ''; noteInput.value = '';
+    if(window.showToast) window.showToast('✅ تم إضافة الطلب بنجاح');
+    // هنا استدعاء دوال التنبيهات إذا كانت موجودة عندك
+  } catch(e) { console.error("Error:", e); }
 };
 
-// --- تسجيل الدخول ---
+// --- باقي الدوال (تسجيل الدخول، الخروج، إلخ) ---
 window.signInWithGoogle = () => signInWithPopup(auth, gProvider);
 window.signOutUser = () => { auth.signOut(); location.reload(); };
 
@@ -458,18 +462,16 @@ onAuthStateChanged(auth, user => {
     currentUser = user;
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    const savedBg = localStorage.getItem('custom-bg');
-    if(savedBg) document.body.style.backgroundImage = `url('${savedBg}')`;
     
+    // ربط البيانات الحية
     unsub = onSnapshot(doc(db, "data", "home"), (d) => {
       if(d.exists()) {
         localData = d.data();
-        window.renderAll();
+        if(window.renderAll) window.renderAll(); // تشغيل الرسام لعرض الجداول
       }
     });
   }
 });
-</script>
 </script>
 </body>
 </html>
