@@ -863,7 +863,7 @@ setTimeout(() => {
   if(savedTheme) window.setTheme(savedTheme);
 }, 500);
 
-// 4. الدالة النهائية (فصل التاريخ عن الوقت + إظهار الاسم غصب)
+// 4. الدالة النهائية (الضربة القاضية للاسم والتاريخ)
 window.addRequest = async function() {
   const itemInput = document.getElementById('req-item');
   const typeInput = document.getElementById('req-type');
@@ -872,25 +872,33 @@ window.addRequest = async function() {
 
   if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
 
-  // فصلنا الوقت عن التاريخ عشان رسامك المزاجي ما يكررهم
+  // صيدة الاسم بالقوة (نقرا النص اللي طالع بالشاشة مو القيمة المخفية)
+  let selectedUser = 'حمود'; // احتياط أمني
+  if (userInput && userInput.selectedIndex >= 0) {
+    selectedUser = userInput.options[userInput.selectedIndex].text;
+  }
+
   const now = new Date();
   const justDate = now.toLocaleDateString('ar-KW'); 
   const justTime = now.toLocaleTimeString('ar-KW', {hour: '2-digit', minute:'2-digit'});
 
-  // صيدة الاسم (وإذا ما لقى القائمة المنسدلة بيكتب بدون اسم عشان نعرف الخلل)
-  const selectedUser = (userInput && userInput.value) ? userInput.value : 'بدون اسم';
-
-  // هذي الحزمة تلبي كل طلبات الرسام مالك عشان ما يخفي شي
+  // حطينا الاسم بكل المتغيرات الممكنة عشان الكود القديم يلقاها وهو يضحك
   const newReq = {
     id: Date.now(),
     type: typeInput ? typeInput.value : 'طلب عام',
     item: itemInput.value.trim(),
-    text: itemInput.value.trim(), // حطيناها مرتين احتياط
+    text: itemInput.value.trim(),
     note: (noteInput && noteInput.value.trim() !== '') ? noteInput.value.trim() : 'لا يوجد',
+    
+    // القصف العشوائي للاسم ههههه
     user: selectedUser,
-    userName: selectedUser,       // حطيناها مرتين احتياط
-    date: justDate,               // التاريخ بروحه
-    time: justTime,               // الوقت بروحه
+    userName: selectedUser,
+    name: selectedUser,
+    by: selectedUser,
+    author: selectedUser,
+    
+    date: justDate,
+    time: justTime,
     status: 'pending'
   };
 
