@@ -274,7 +274,9 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
     <button class="main-tab" id="tab-tasks-hamoud" onclick="unlockTab('حمود')">📝 مهام حمود <span id="badge-hamoud"></span></button>
     <button class="main-tab" id="tab-tasks-arwa" onclick="unlockTab('أروى')">📝 مهام أروى <span id="badge-arwa"></span></button>
   </div>
-
+<button class="main-tab" onclick="document.getElementById('bg-upload').click()">🖼️ خلفية</button>
+<input type="file" id="bg-upload" style="display:none" onchange="uploadBackground(event)" accept="image/*">
+  
   <div class="page active" id="page-inventory">
     <div style="height:14px"></div>
     <div class="stat-grid">
@@ -334,7 +336,7 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <input type="text" id="req-note" placeholder="ملاحظة (اختياري)..." style="flex:1;"/>
-          <button class="add-btn" onclick="addRequest()">📤 إرسال الطلب</button>
+         <button class="add-btn" onclick="addRequest()">➕ إضافة الطلبات</button>
         </div>
       </div>
     </div>
@@ -823,6 +825,78 @@ function setupAC(){
 }
 
 document.getElementById('search-inv').addEventListener('input',renderInventory);
+  // --- حزمة إصلاحات الدلع الإلكتروني ---
+
+// 1. دالة تغيير الخلفية
+window.uploadBackground = function(e) {
+  const file = e.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      document.body.style.backgroundImage = `url('${ev.target.result}')`;
+      document.body.style.backgroundSize = 'cover';
+      document.body.style.backgroundAttachment = 'fixed';
+      localStorage.setItem('custom-bg', ev.target.result);
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+// 2. إصلاح الألوان (الثيمات)
+window.setTheme = function(t) {
+  document.body.className = t === 'light' ? '' : 'theme-' + t;
+  localStorage.setItem('kit-theme', t);
+};
+
+// 3. تشغيل الألوان والخلفية فوراً عند فتح البرنامج
+setTimeout(() => {
+  const savedBg = localStorage.getItem('custom-bg');
+  if(savedBg) {
+    document.body.style.backgroundImage = `url('${savedBg}')`;
+    document.body.style.backgroundSize = 'cover';
+    document.body.style.backgroundAttachment = 'fixed';
+  }
+  const savedTheme = localStorage.getItem('kit-theme');
+  if(savedTheme) window.setTheme(savedTheme);
+}, 500);
+
+// 4. إصلاح إضافة الطلبات وربطها بقاعدة البيانات
+window.addRequest = async function() {
+  const itemInput = document.getElementById('req-item');
+  const typeInput = document.getElementById('req-type');
+  const noteInput = document.getElementById('req-note');
+
+  if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً!'); return; }
+
+  const newReq = {
+    id: Date.now(),
+    type: typeInput ? typeInput.value : 'طلب',
+    text: itemInput.value.trim() + (noteInput && noteInput.value ? ' - ملاحظة: ' + noteInput.value : ''),
+    user: (currentUser && currentUser.displayName) ? currentUser.displayName : 'مستخدم',
+    date: new Date().toISOString()
+  };
+
+  try {
+    await updateDoc(doc(db, "data", "home"), {
+      requests: arrayUnion(newReq)
+    });
+    itemInput.value = '';
+    if(noteInput) noteInput.value = '';
+    
+    // إظهار التنبيه الأخضر في الشاشة
+    const toast = document.getElementById('toast');
+    if(toast) {
+      toast.innerText = '✅ تم إضافة الطلب بنجاح';
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    } else {
+      alert('✅ تم إضافة الطلب بنجاح');
+    }
+  } catch(e) {
+    console.error("خطأ:", e);
+    alert('حدث خطأ أثناء الإضافة!');
+  }
+};
 </script>
 </body>
 </html>
