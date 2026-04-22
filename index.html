@@ -332,18 +332,17 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
             <option value="مشروب">☕ مشروب</option>
             <option value="طلب عام">📝 طلب عام</option>
           </select>
-          <input type="text" id="req-item" placeholder="شنو تبي؟..." class="ac-inp" data-ac="req-item" autocomplete="off" style="flex:1;min-width:120px;"/>
+          <input type="text" id="req-item" placeholder="شنو تبي؟..." style="flex:1;min-width:120px;"/>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
           <select id="req-user" style="padding:7px 10px; border:0.5px solid var(--border2); border-radius:var(--r-md); background:var(--surface); color:var(--text); font-family:var(--font);">
-  <option value="حمود">حمود</option>
-  <option value="أروى">أروى</option>
-</select>
-<input type="text" id="req-note" placeholder="ملاحظة (اختياري)..." style="flex:1;"/>
-         <button class="add-btn" onclick="addRequest()">➕ إضافة الطلبات</button>
+            <option value="حمود">حمود</option>
+            <option value="أروى">أروى</option>
+          </select>
+          <input type="text" id="req-note" placeholder="ملاحظة (اختياري)..." style="flex:1;"/>
+          <button class="add-btn" onclick="addRequest()">➕ إضافة الطلب</button>
         </div>
       </div>
-    </div>
     <div class="box">
       <div class="box-head">
         <span class="box-title">📋 قائمة الطلبات</span>
@@ -864,25 +863,30 @@ setTimeout(() => {
   if(savedTheme) window.setTheme(savedTheme);
 }, 500);
 
-// 4. إصلاح إضافة الطلبات (مع القائمة المنسدلة للأسماء وتصليح التاريخ)
+// 4. إصلاح إضافة الطلبات (التاريخ المرتب والأسماء بدون undefined)
 window.addRequest = async function() {
   const itemInput = document.getElementById('req-item');
   const typeInput = document.getElementById('req-type');
   const noteInput = document.getElementById('req-note');
-  const userInput = document.getElementById('req-user'); // 👈 هنا نقرأ الاسم من القائمة
+  const userInput = document.getElementById('req-user');
 
   if(!itemInput || !itemInput.value.trim()) { alert('اكتب الطلب أولاً يا حمود!'); return; }
 
-  const selectedUser = userInput ? userInput.value : 'مجهول';
+  // تنسيق التاريخ عشان يطلع كشخة (مثال: 22/4/2026, 10:30 م)
+  const prettyDate = new Date().toLocaleString('ar-KW', { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit' });
 
+  // نجهز الطلب بكل المتغيرات الممكنة عشان الكود القديم ما يضيع
   const newReq = {
     id: Date.now(),
     type: typeInput ? typeInput.value : 'طلب عام',
     item: itemInput.value.trim(),
-    note: noteInput ? noteInput.value.trim() : '',
-    user: selectedUser,               // 👈 نحفظ الاسم اللي اخترته (حمود أو أروى)
+    text: itemInput.value.trim(), 
+    note: (noteInput && noteInput.value.trim() !== '') ? noteInput.value.trim() : 'بدون ملاحظات',
+    user: userInput ? userInput.value : 'مجهول',
+    userName: userInput ? userInput.value : 'مجهول',
     status: 'pending',
-    date: new Date().toISOString()    // 👈 رجعنا صيغة التاريخ عشان ما تطلع لك أرقام غريبة
+    date: prettyDate,
+    time: prettyDate
   };
 
   try {
@@ -895,6 +899,8 @@ window.addRequest = async function() {
     }
 
     if(typeof renderRequests === 'function') renderRequests();
+    
+    // تنظيف الخانات بعد الإضافة
     itemInput.value = '';
     if(noteInput) noteInput.value = '';
     
