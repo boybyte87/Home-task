@@ -217,7 +217,10 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
   <div class="pin-card">
     <div class="pin-title" id="pin-title">🔒 أدخل رقمك السري</div>
     <input type="password" class="pin-input" id="pin-input" maxlength="6" placeholder="•••" inputmode="numeric"/>
-    <button class="pin-btn" onclick="checkPin()">دخول</button>
+    <div style="display:flex;gap:10px;">
+      <button class="pin-btn" style="flex:1;" onclick="checkPin()">دخول</button>
+      <button class="pin-btn" style="flex:1;background:var(--surface2);color:var(--text);border:0.5px solid var(--border2);" onclick="closePin()">إلغاء</button>
+    </div>
     <div class="pin-error" id="pin-error"></div>
   </div>
 </div>
@@ -355,6 +358,7 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
       <div class="box-head">
         <span class="box-title">🛒 قائمة التسوق</span>
         <div class="box-actions">
+          <button class="icon-btn" style="color:#25D366;border-color:#25D366;" onclick="shareShoppingList()">📲 إرسال</button>
           <button class="icon-btn" onclick="clearBoughtItems()">مسح المشتراة</button>
           <button class="icon-btn primary" onclick="addLowStockToShopping()">+ إضافة الناقص</button>
         </div>
@@ -419,7 +423,7 @@ async function sendNotification(type, fromName, message){
 
 // ── WhatsApp CallMeBot ──
 const WA_PHONE_HAMOUD = '+96597965646'; 
-const WA_API_HAMOUD = '574551'; 
+const WA_API_HAMOUD = '5745517'; 
 
 const WA_PHONE_ARWA = '+965YYYYYYYY'; // استبدل برقم أروى لاحقاً
 const WA_API_ARWA = 'YOUR_API_KEY_2'; // استبدل بمفتاح أروى لاحقاً
@@ -428,12 +432,12 @@ function sendWhatsApp(message) {
   try {
     var encodedMessage = encodeURIComponent(message);
     if(WA_PHONE_HAMOUD && WA_PHONE_HAMOUD !== '+965XXXXXXXX') {
-      var urlHamoud = `https://api.callmebot.com/whatsapp.php?phone=${WA_PHONE_HAMOUD}&text=${encodedMessage}&apikey=${WA_API_HAMOUD}`;
-      fetch(urlHamoud, { mode: 'no-cors' }).catch(e => console.log(e));
+      var url1 = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(WA_PHONE_HAMOUD)}&text=${encodedMessage}&apikey=${WA_API_HAMOUD}`;
+      new Image().src = url1; // ميزة تجاوز الحماية (Image Hack)
     }
     if(WA_PHONE_ARWA && WA_PHONE_ARWA !== '+965YYYYYYYY') {
-      var urlArwa = `https://api.callmebot.com/whatsapp.php?phone=${WA_PHONE_ARWA}&text=${encodedMessage}&apikey=${WA_API_ARWA}`;
-      fetch(urlArwa, { mode: 'no-cors' }).catch(e => console.log(e));
+      var url2 = `https://api.callmebot.com/whatsapp.php?phone=${encodeURIComponent(WA_PHONE_ARWA)}&text=${encodedMessage}&apikey=${WA_API_ARWA}`;
+      new Image().src = url2;
     }
   } catch(e) { console.log('WhatsApp error:', e); }
 }
@@ -565,6 +569,11 @@ window.unlockTab = function(person) {
   setTimeout(function() { document.getElementById('pin-input').focus(); }, 100);
 };
 
+window.closePin = function() {
+  document.getElementById('pin-overlay').classList.remove('open');
+  currentPinTarget = null;
+};
+
 window.checkPin = function() {
   var inp = document.getElementById('pin-input').value;
   if (inp === PINS[currentPinTarget]) {
@@ -691,6 +700,14 @@ window.addLowStockToShopping=function(){
   var low=localData.inventory.filter(i=>i.qty<=i.minQty), added=0;
   low.forEach(function(item){ if(!localData.shopping.find(s=>s.name===item.name&&!s.bought)){ localData.shopping.push({id:Date.now()+Math.random(),name:item.name,emoji:item.emoji,qty:1,price:0,bought:false}); added++; } });
   if(added>0){ saveToCloud(); renderShopping(); showToast('🛒 أضيف '+added+' صنف للتسوق'); } else showToast('كل الأصناف الناقصة موجودة في القائمة');
+};
+
+window.shareShoppingList=function(){
+  var pending=localData.shopping.filter(s=>!s.bought);
+  if(pending.length===0){ showToast('⚠️ القائمة فارغة'); return; }
+  var msg='🛒 *قائمة التسوق:*\n\n';
+  pending.forEach(function(s){ msg+='🔸 '+s.name+' ('+s.qty+')\n'; });
+  window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank');
 };
 
 window.addRequest=async function(){
