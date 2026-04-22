@@ -181,7 +181,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
 /* LOW STOCK ALERT */
 .alert-bar{background:var(--amber-bg);border:0.5px solid var(--amber);border-radius:var(--r-md);padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--amber);display:flex;align-items:center;gap:8px;}
 
-
 /* PIN OVERLAY */
 #pin-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;align-items:center;justify-content:center;}
 #pin-overlay.open{display:flex;}
@@ -204,7 +203,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
 </head>
 <body>
 
-<!-- CONFIRM -->
 <div id="confirm-overlay">
   <div class="confirm-card">
     <div id="confirm-msg"></div>
@@ -215,8 +213,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
   </div>
 </div>
 
-
-<!-- PIN OVERLAY -->
 <div id="pin-overlay">
   <div class="pin-card">
     <div class="pin-title" id="pin-title">🔒 أدخل رقمك السري</div>
@@ -226,10 +222,8 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="login-emoji">🏠</div>
@@ -242,7 +236,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
   </div>
 </div>
 
-<!-- APP -->
 <div id="app-screen">
   <div class="topbar">
     <div class="topbar-brand">
@@ -279,7 +272,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
     <button class="main-tab" id="tab-tasks-arwa" onclick="unlockTab('أروى')">📝 مهام أروى <span id="badge-arwa"></span></button>
   </div>
 
-  <!-- INVENTORY PAGE -->
   <div class="page active" id="page-inventory">
     <div style="height:14px"></div>
     <div class="stat-grid">
@@ -318,7 +310,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
     </div>
   </div>
 
-  <!-- REQUESTS PAGE -->
   <div class="page" id="page-requests">
     <div style="height:14px"></div>
     <div class="stat-grid">
@@ -326,8 +317,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
       <div class="stat-card"><div class="stat-label">منجزة اليوم</div><div class="stat-val sv-green" id="req-done">0</div></div>
       <div class="stat-card"><div class="stat-label">إجمالي الطلبات</div><div class="stat-val" id="req-total">0</div></div>
     </div>
-
-    <!-- NEW REQUEST -->
     <div class="box">
       <div class="box-head"><span class="box-title">✨ طلب جديد</span></div>
       <div class="add-row" style="flex-direction:column;gap:8px;">
@@ -346,8 +335,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
         </div>
       </div>
     </div>
-
-    <!-- REQUESTS LIST -->
     <div class="box">
       <div class="box-head">
         <span class="box-title">📋 قائمة الطلبات</span>
@@ -357,7 +344,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
     </div>
   </div>
 
-  <!-- SHOPPING PAGE -->
   <div class="page" id="page-shopping">
     <div style="height:14px"></div>
     <div class="stat-grid">
@@ -383,7 +369,6 @@ body{background:var(--bg);font-family:var(--font);direction:rtl;min-height:100vh
     </div>
   </div>
 
-  <!-- TASKS PAGES -->
   <div class="page" id="page-tasks-hamoud">
     <div style="height:14px"></div>
     <div id="tasks-hamoud-content"></div>
@@ -400,7 +385,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// ── Firebase Config ──
 const firebaseConfig={apiKey:"AIzaSyDMSFTbFGetq1WsCo-mVsNUbHVcqhC4Tow",authDomain:"budget-home-1.firebaseapp.com",projectId:"budget-home-1",storageBucket:"budget-home-1.firebasestorage.app",messagingSenderId:"1082972153053",appId:"1:1082972153053:web:ba31f2c4da3cf95e35e734"};
 const fbApp=initializeApp(firebaseConfig);
 const db=getFirestore(fbApp);
@@ -408,9 +392,7 @@ const auth=getAuth(fbApp);
 const gProvider=new GoogleAuthProvider();
 gProvider.setCustomParameters({prompt:'select_account'});
 
-// ── EmailJS ──
 const EJS_SVC='service_8umlngb', EJS_TPL='template_b712oer', EJS_KEY='EmfI9mvmjhSn8x3ey';
-const HOME_EMAIL='our.cozy.home90@gmail.com';
 
 async function sendNotification(type, fromName, message){
   try{
@@ -435,9 +417,27 @@ async function sendNotification(type, fromName, message){
   }catch(e){ console.log('Email error:',e); }
 }
 
-// ── STATE ──
+// ── WhatsApp CallMeBot ──
+const WA_PHONE_HAMOUD = '+96597965646'; 
+const WA_API_HAMOUD = '574551'; 
 
-// ══ PINS & TASKS CONFIG ══
+const WA_PHONE_ARWA = '+965YYYYYYYY'; // استبدل برقم أروى لاحقاً
+const WA_API_ARWA = 'YOUR_API_KEY_2'; // استبدل بمفتاح أروى لاحقاً
+
+function sendWhatsApp(message) {
+  try {
+    var encodedMessage = encodeURIComponent(message);
+    if(WA_PHONE_HAMOUD && WA_PHONE_HAMOUD !== '+965XXXXXXXX') {
+      var urlHamoud = `https://api.callmebot.com/whatsapp.php?phone=${WA_PHONE_HAMOUD}&text=${encodedMessage}&apikey=${WA_API_HAMOUD}`;
+      fetch(urlHamoud, { mode: 'no-cors' }).catch(e => console.log(e));
+    }
+    if(WA_PHONE_ARWA && WA_PHONE_ARWA !== '+965YYYYYYYY') {
+      var urlArwa = `https://api.callmebot.com/whatsapp.php?phone=${WA_PHONE_ARWA}&text=${encodedMessage}&apikey=${WA_API_ARWA}`;
+      fetch(urlArwa, { mode: 'no-cors' }).catch(e => console.log(e));
+    }
+  } catch(e) { console.log('WhatsApp error:', e); }
+}
+
 const PINS = { 'حمود': '2580', 'أروى': '223223' };
 const TASK_CATS = ['نشاط منزلي', 'نشاط اجتماعي', 'ترفيه', 'دراسة', 'عمل', 'أخرى'];
 let unlockedTabs = { حمود: false, أروى: false };
@@ -445,11 +445,9 @@ let currentPinTarget = null;
 let localData={inventory:[],requests:[],shopping:[],tasks:{حمود:[],أروى:[]},pendingTasks:{حمود:[],أروى:[]}};
 let currentUser=null, unsub=null;
 let invSort=0, editingInv=null, editingShop=null, editingReq=null;
-let editingTask = {};
 let activeInvCat='الكل';
 let acListEl=null;
 
-// ── THEME ──
 window.setTheme=function(t){
   document.body.className=document.body.className.replace(/theme-\S+/g,'').trim();
   document.body.classList.add('theme-'+t);
@@ -459,17 +457,8 @@ window.setTheme=function(t){
 };
 (function(){ window.setTheme(localStorage.getItem('kit-theme')||'light'); })();
 
-// ── AUTH ──
 window.signInWithGoogle=async function(){ try{ await signInWithPopup(auth,gProvider); }catch(e){ alert('تعذّر تسجيل الدخول.'); } };
-window.signOutUser=async function(){ 
-  if(unsub)unsub(); 
-  currentUser=null;
-  unlockedTabs={حمود:false,أروى:false};
-  await signOut(auth); 
-  document.getElementById('app-screen').style.display='none'; 
-  document.getElementById('login-screen').style.display='flex'; 
-  document.getElementById('user-dropdown').classList.remove('open'); 
-};
+window.signOutUser=async function(){ if(unsub)unsub(); currentUser=null; unlockedTabs={حمود:false,أروى:false}; await signOut(auth); document.getElementById('app-screen').style.display='none'; document.getElementById('login-screen').style.display='flex'; document.getElementById('user-dropdown').classList.remove('open'); };
 window.toggleUserMenu=function(){ document.getElementById('user-dropdown').classList.toggle('open'); };
 
 document.addEventListener('click',function(e){
@@ -494,7 +483,6 @@ onAuthStateChanged(auth,function(user){
   }
 });
 
-// ── SYNC ──
 function setSyncDot(s){ document.getElementById('sync-dot').className='sync-dot '+s; }
 function getDocRef(){ return doc(db,'kitchen',currentUser.uid,'data','main'); }
 
@@ -538,14 +526,12 @@ function todayStr(){ return new Date().toLocaleDateString('ar-KW'); }
 function timeStr(){ return new Date().toLocaleTimeString('ar-KW',{hour:'2-digit',minute:'2-digit'}); }
 function escH(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ── TOAST ──
 function showToast(msg){
   var t=document.getElementById('toast');
   t.textContent=msg; t.classList.add('show');
   setTimeout(function(){ t.classList.remove('show'); },3000);
 }
 
-// ── CONFIRM ──
 function customConfirm(msg, onOk){
   var ov=document.getElementById('confirm-overlay');
   document.getElementById('confirm-msg').textContent=msg;
@@ -556,7 +542,6 @@ function customConfirm(msg, onOk){
   ca.onclick=function(){ cleanup(); };
 }
 
-// ── TAB NAVIGATION ──
 window.switchTab=function(tab){
   ['inventory','requests','shopping','tasks-hamoud','tasks-arwa'].forEach(function(t){
     var tabEl=document.getElementById('tab-'+t);
@@ -566,8 +551,6 @@ window.switchTab=function(tab){
   });
 };
 
-
-// ══ PIN FUNCTIONS ══
 window.unlockTab = function(person) {
   if (unlockedTabs[person]) {
     switchTab('tasks-' + person.replace('حمود', 'hamoud').replace('أروى', 'arwa'));
@@ -595,128 +578,64 @@ window.checkPin = function() {
   }
 };
 
-// PIN input enter key
 document.addEventListener('DOMContentLoaded', function() {
   var pinInp = document.getElementById('pin-input');
-  if (pinInp) {
-    pinInp.addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') checkPin();
-    });
-  }
+  if (pinInp) { pinInp.addEventListener('keypress', function(e) { if (e.key === 'Enter') checkPin(); }); }
 });
 
-// ══ TASKS FUNCTIONS ══
 function renderTasks(person) {
   var tasks = localData.tasks[person] || [];
   var contentEl = document.getElementById('tasks-' + person.replace('حمود', 'hamoud').replace('أروى', 'arwa') + '-content');
   if (!contentEl) return;
-  
-  var total = tasks.length;
-  var done = tasks.filter(t => t.status === 'منجز').length;
-  var pending = tasks.filter(t => t.status === 'معلق').length;
-  
-  var html = '<div class="stat-grid">' +
-    '<div class="stat-card"><div class="stat-label">إجمالي</div><div class="stat-val">' + total + '</div></div>' +
-    '<div class="stat-card"><div class="stat-label">منجزة</div><div class="stat-val sv-green">' + done + '</div></div>' +
-    '<div class="stat-card"><div class="stat-label">معلقة</div><div class="stat-val sv-amber">' + pending + '</div></div>' +
-    '</div>';
-  
+  var total = tasks.length, done = tasks.filter(t => t.status === 'منجز').length, pending = tasks.filter(t => t.status === 'معلق').length;
+  var html = '<div class="stat-grid"><div class="stat-card"><div class="stat-label">إجمالي</div><div class="stat-val">' + total + '</div></div><div class="stat-card"><div class="stat-label">منجزة</div><div class="stat-val sv-green">' + done + '</div></div><div class="stat-card"><div class="stat-label">معلقة</div><div class="stat-val sv-amber">' + pending + '</div></div></div>';
   TASK_CATS.forEach(function(cat) {
     var catTasks = tasks.filter(t => t.category === cat);
     if (catTasks.length === 0) return;
-    
     html += '<div class="box"><div class="box-head"><span class="box-title">' + cat + '</span></div>';
-    
     catTasks.forEach(function(task) {
       var prClass = task.priority === 'عاجل' ? 'pr-urgent' : task.priority === 'مهم' ? 'pr-important' : 'pr-normal';
       var stClass = task.status === 'منجز' ? 'sb-done' : task.status === 'مؤجل' ? 'sb-cancelled' : 'sb-pending';
-      
-      html += '<div class="irow">' +
-        '<div class="irow-left"><div class="irow-info">' +
-        '<div class="irow-name">' + escH(task.name) + ' <span class="priority-badge ' + prClass + '">' + task.priority + '</span></div>' +
-        '<div class="irow-sub"><span class="status-badge ' + stClass + '">' + task.status + '</span></div>' +
-        '</div></div><div class="irow-right">' +
-        '<button class="icon-btn" style="color:var(--green);font-size:11px;" onclick="toggleTaskStatus(\'' + person + '\',' + task.id + ')">' + (task.status === 'منجز' ? '↩️' : '✓') + '</button>' +
-        '<button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteTask(\'' + person + '\',' + task.id + ')">🗑️</button>' +
-        '</div></div>';
+      html += '<div class="irow"><div class="irow-left"><div class="irow-info"><div class="irow-name">' + escH(task.name) + ' <span class="priority-badge ' + prClass + '">' + task.priority + '</span></div><div class="irow-sub"><span class="status-badge ' + stClass + '">' + task.status + '</span></div></div></div><div class="irow-right"><button class="icon-btn" style="color:var(--green);font-size:11px;" onclick="toggleTaskStatus(\'' + person + '\',' + task.id + ')">' + (task.status === 'منجز' ? '↩️' : '✓') + '</button><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteTask(\'' + person + '\',' + task.id + ')">🗑️</button></div></div>';
     });
-    
     html += '</div>';
   });
-  
-  html += '<div class="box"><div class="box-head"><span class="box-title">+ إضافة مهمة</span></div>' +
-    '<div class="add-row" style="flex-direction:column;gap:8px;">' +
-    '<input type="text" id="new-task-' + person + '" placeholder="اسم المهمة..." style="width:100%;"/>' +
-    '<div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;">' +
-    '<select id="new-cat-' + person + '" style="flex:1;">' + TASK_CATS.map(c => '<option>' + c + '</option>').join('') + '</select>' +
-    '<select id="new-priority-' + person + '" style="max-width:100px;"><option>عادي</option><option>مهم</option><option>عاجل</option></select>' +
-    '<button class="add-btn" onclick="addTask(\'' + person + '\')">+ إضافة</button>' +
-    '</div></div></div>';
-  
+  html += '<div class="box"><div class="box-head"><span class="box-title">+ إضافة مهمة</span></div><div class="add-row" style="flex-direction:column;gap:8px;"><input type="text" id="new-task-' + person + '" placeholder="اسم المهمة..." style="width:100%;"/><div style="display:flex;gap:6px;flex-wrap:wrap;width:100%;"><select id="new-cat-' + person + '" style="flex:1;">' + TASK_CATS.map(c => '<option>' + c + '</option>').join('') + '</select><select id="new-priority-' + person + '" style="max-width:100px;"><option>عادي</option><option>مهم</option><option>عاجل</option></select><button class="add-btn" onclick="addTask(\'' + person + '\')">+ إضافة</button></div></div></div>';
   contentEl.innerHTML = html;
 }
 
 window.addTask = function(person) {
-  var name = document.getElementById('new-task-' + person).value.trim();
-  var cat = document.getElementById('new-cat-' + person).value;
-  var priority = document.getElementById('new-priority-' + person).value;
+  var name = document.getElementById('new-task-' + person).value.trim(), cat = document.getElementById('new-cat-' + person).value, priority = document.getElementById('new-priority-' + person).value;
   if (!name) return;
-  localData.tasks[person].push({
-    id: Date.now(),
-    name: name,
-    category: cat,
-    priority: priority,
-    status: 'معلق',
-    createdAt: new Date().toISOString()
-  });
+  localData.tasks[person].push({ id: Date.now(), name: name, category: cat, priority: priority, status: 'معلق', createdAt: new Date().toISOString() });
   document.getElementById('new-task-' + person).value = '';
-  saveToCloud();
-  renderTasks(person);
-  showToast('✅ تمت الإضافة');
+  saveToCloud(); renderTasks(person); showToast('✅ تمت الإضافة');
+  var waTaskMsg = '📝 *مهمة جديدة لـ ' + person + '*\nالمهمة: ' + name + '\nالتصنيف: ' + cat + '\nالأهمية: ' + priority;
+  sendWhatsApp(waTaskMsg);
 };
 
 window.toggleTaskStatus = function(person, id) {
-  var task = localData.tasks[person].find(t => t.id === id);
-  if (!task) return;
+  var task = localData.tasks[person].find(t => t.id === id); if (!task) return;
   task.status = task.status === 'منجز' ? 'معلق' : 'منجز';
   if (task.status === 'منجز') task.completedAt = new Date().toISOString();
-  saveToCloud();
-  renderTasks(person);
+  saveToCloud(); renderTasks(person);
 };
 
-window.deleteTask = function(person, id) {
-  customConfirm('حذف هذه المهمة؟', function() {
-    localData.tasks[person] = localData.tasks[person].filter(t => t.id !== id);
-    saveToCloud();
-    renderTasks(person);
-  });
-};
+window.deleteTask = function(person, id) { customConfirm('حذف هذه المهمة؟', function() { localData.tasks[person] = localData.tasks[person].filter(t => t.id !== id); saveToCloud(); renderTasks(person); }); };
 
-// ══ REQUEST EDIT FUNCTIONS ══
 window.startEditReq = function(id) { editingReq = id; renderRequests(); };
 window.cancelEditReq = function() { editingReq = null; renderRequests(); };
 window.saveEditReq = function(id) {
-  var req = localData.requests.find(r => r.id === id);
-  if (!req) return;
-  req.type = document.getElementById('er-type-' + id).value;
-  req.item = document.getElementById('er-item-' + id).value.trim() || req.item;
-  req.note = document.getElementById('er-note-' + id).value.trim();
-  editingReq = null;
-  saveToCloud();
-  renderRequests();
+  var req = localData.requests.find(r => r.id === id); if (!req) return;
+  req.type = document.getElementById('er-type-' + id).value; req.item = document.getElementById('er-item-' + id).value.trim() || req.item; req.note = document.getElementById('er-note-' + id).value.trim();
+  editingReq = null; saveToCloud(); renderRequests();
 };
 
-
-// ── INVENTORY ──
 const INV_SORT_LABELS=['↕ عادي','↓ تنازلي','↑ تصاعدي','⚠ الناقص أولاً','🔤 أبجدي'];
 window.cycleInvSort=function(){ invSort=(invSort+1)%5; document.getElementById('inv-sort-lbl').textContent=INV_SORT_LABELS[invSort].split(' ')[0]; renderInventory(); };
 
 window.addInventory=function(){
-  var name=document.getElementById('inv-name').value.trim();
-  var emoji=document.getElementById('inv-emoji').value.trim()||'📦';
-  var cat=document.getElementById('inv-cat').value;
-  var qty=parseFloat(document.getElementById('inv-qty').value)||0;
-  var minQty=parseFloat(document.getElementById('inv-min').value)||1;
+  var name=document.getElementById('inv-name').value.trim(), emoji=document.getElementById('inv-emoji').value.trim()||'📦', cat=document.getElementById('inv-cat').value, qty=parseFloat(document.getElementById('inv-qty').value)||0, minQty=parseFloat(document.getElementById('inv-min').value)||1;
   if(!name)return;
   localData.inventory.push({id:Date.now(),name,emoji,cat,qty,minQty});
   document.getElementById('inv-name').value=''; document.getElementById('inv-emoji').value=''; document.getElementById('inv-qty').value=''; document.getElementById('inv-min').value='';
@@ -726,282 +645,129 @@ window.addInventory=function(){
 window.deleteInventory=function(id){ customConfirm('حذف هذا الصنف؟',function(){ localData.inventory=localData.inventory.filter(i=>i.id!==id); saveToCloud(); renderInventory(); }); };
 
 window.changeQty=function(id,delta){
-  var item=localData.inventory.find(i=>i.id===id);
-  if(!item)return;
-  item.qty=Math.max(0,item.qty+delta);
-  saveToCloud(); renderInventory();
+  var item=localData.inventory.find(i=>i.id===id); if(!item)return;
+  item.qty=Math.max(0,item.qty+delta); saveToCloud(); renderInventory();
 };
 
 window.startEditInv=function(id){ editingInv=id; renderInventory(); };
 window.cancelEditInv=function(){ editingInv=null; renderInventory(); };
 window.saveEditInv=function(id){
-  var item=localData.inventory.find(i=>i.id===id);
-  if(!item)return;
-  item.name=document.getElementById('ei-name-'+id).value.trim()||item.name;
-  item.emoji=document.getElementById('ei-emoji-'+id).value.trim()||item.emoji;
-  item.cat=document.getElementById('ei-cat-'+id).value;
-  item.qty=parseFloat(document.getElementById('ei-qty-'+id).value)||0;
-  item.minQty=parseFloat(document.getElementById('ei-min-'+id).value)||1;
+  var item=localData.inventory.find(i=>i.id===id); if(!item)return;
+  item.name=document.getElementById('ei-name-'+id).value.trim()||item.name; item.emoji=document.getElementById('ei-emoji-'+id).value.trim()||item.emoji; item.cat=document.getElementById('ei-cat-'+id).value; item.qty=parseFloat(document.getElementById('ei-qty-'+id).value)||0; item.minQty=parseFloat(document.getElementById('ei-min-'+id).value)||1;
   editingInv=null; saveToCloud(); renderInventory();
 };
 
 function renderInventory(){
   var search=(document.getElementById('search-inv').value||'').toLowerCase();
   var items=localData.inventory.slice();
-
-  // category filter
   var cats=new Set(['الكل']); items.forEach(i=>cats.add(i.cat));
-  var cfEl=document.getElementById('inv-cat-filters');
-  cfEl.innerHTML=Array.from(cats).map(c=>`<button class="cat-pill${c===activeInvCat?' active':''}" onclick="setInvCat('${c}')">${c}</button>`).join('');
-
+  var cfEl=document.getElementById('inv-cat-filters'); cfEl.innerHTML=Array.from(cats).map(c=>`<button class="cat-pill${c===activeInvCat?' active':''}" onclick="setInvCat('${c}')">${c}</button>`).join('');
   if(activeInvCat!=='الكل') items=items.filter(i=>i.cat===activeInvCat);
   if(search) items=items.filter(i=>i.name.toLowerCase().includes(search)||i.cat.toLowerCase().includes(search));
-
-  if(invSort===1) items.sort((a,b)=>b.qty-a.qty);
-  else if(invSort===2) items.sort((a,b)=>a.qty-b.qty);
-  else if(invSort===3) items.sort((a,b)=>(a.qty<=a.minQty?0:1)-(b.qty<=b.minQty?0:1));
-  else if(invSort===4) items.sort((a,b)=>a.name.localeCompare(b.name,'ar'));
-
-  var total=localData.inventory.length;
-  var low=localData.inventory.filter(i=>i.qty>0&&i.qty<=i.minQty).length;
-  var zero=localData.inventory.filter(i=>i.qty===0).length;
-  document.getElementById('inv-total').textContent=total;
-  document.getElementById('inv-low').textContent=low;
-  document.getElementById('inv-zero').textContent=zero;
-
-  var alertBar=document.getElementById('low-stock-alert');
-  if(low>0||zero>0){
-    alertBar.style.display='flex';
-    document.getElementById('low-stock-msg').textContent=(zero>0?zero+' صنف نفد تماماً، ':'')+( low>0?low+' صنف يكاد ينتهي':'');
-  } else { alertBar.style.display='none'; }
-
-  var el=document.getElementById('inv-list');
-  if(items.length===0){ el.innerHTML='<div class="empty">ما في أصناف</div>'; return; }
-
+  if(invSort===1) items.sort((a,b)=>b.qty-a.qty); else if(invSort===2) items.sort((a,b)=>a.qty-b.qty); else if(invSort===3) items.sort((a,b)=>(a.qty<=a.minQty?0:1)-(b.qty<=b.minQty?0:1)); else if(invSort===4) items.sort((a,b)=>a.name.localeCompare(b.name,'ar'));
+  document.getElementById('inv-total').textContent=localData.inventory.length; document.getElementById('inv-low').textContent=localData.inventory.filter(i=>i.qty>0&&i.qty<=i.minQty).length; document.getElementById('inv-zero').textContent=localData.inventory.filter(i=>i.qty===0).length;
+  var low=localData.inventory.filter(i=>i.qty>0&&i.qty<=i.minQty).length, zero=localData.inventory.filter(i=>i.qty===0).length, alertBar=document.getElementById('low-stock-alert');
+  if(low>0||zero>0){ alertBar.style.display='flex'; document.getElementById('low-stock-msg').textContent=(zero>0?zero+' صنف نفد تماماً، ':'')+( low>0?low+' صنف يكاد ينتهي':''); } else { alertBar.style.display='none'; }
+  var el=document.getElementById('inv-list'); if(items.length===0){ el.innerHTML='<div class="empty">ما في أصناف</div>'; return; }
   const CATS_OPT=['مواد غذائية','خضروات وفواكه','ألبان وبيض','لحوم ودجاج','مشروبات','تنظيف','أدوات','أخرى'];
-
   el.innerHTML=items.map(function(i){
     var qclass=i.qty===0?'qty-low':i.qty<=i.minQty?'qty-med':'qty-ok';
     if(editingInv===i.id){
       var catOpts=CATS_OPT.map(c=>`<option${c===i.cat?' selected':''}>${c}</option>`).join('');
-      return `<div class="edit-row">
-        <input type="text" id="ei-emoji-${i.id}" value="${escH(i.emoji)}" style="max-width:50px;text-align:center;"/>
-        <input type="text" id="ei-name-${i.id}" value="${escH(i.name)}" style="flex:1;min-width:80px;"/>
-        <select id="ei-cat-${i.id}">${catOpts}</select>
-        <input type="number" id="ei-qty-${i.id}" value="${i.qty}" placeholder="الكمية" style="max-width:70px;" min="0"/>
-        <input type="number" id="ei-min-${i.id}" value="${i.minQty}" placeholder="حد التنبيه" style="max-width:80px;" min="0"/>
-        <button class="save-btn" onclick="saveEditInv(${i.id})">حفظ ✓</button>
-        <button class="cancel-btn2" onclick="cancelEditInv()">إلغاء</button>
-      </div>`;
+      return `<div class="edit-row"><input type="text" id="ei-emoji-${i.id}" value="${escH(i.emoji)}" style="max-width:50px;text-align:center;"/><input type="text" id="ei-name-${i.id}" value="${escH(i.name)}" style="flex:1;min-width:80px;"/><select id="ei-cat-${i.id}">${catOpts}</select><input type="number" id="ei-qty-${i.id}" value="${i.qty}" placeholder="الكمية" style="max-width:70px;" min="0"/><input type="number" id="ei-min-${i.id}" value="${i.minQty}" placeholder="حد التنبيه" style="max-width:80px;" min="0"/><button class="save-btn" onclick="saveEditInv(${i.id})">حفظ ✓</button><button class="cancel-btn2" onclick="cancelEditInv()">إلغاء</button></div>`;
     }
-    return `<div class="irow" onclick="startEditInv(${i.id})" oncontextmenu="startEditInv(${i.id});event.preventDefault()">
-      <div class="irow-left">
-        <span class="irow-emoji">${escH(i.emoji)}</span>
-        <div class="irow-info">
-          <div class="irow-name">${escH(i.name)}</div>
-          <div class="irow-sub">${escH(i.cat)}</div>
-        </div>
-      </div>
-      <div class="irow-right">
-        <div class="qty-ctrl" onclick="event.stopPropagation()">
-          <button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button>
-          <span class="qty-num qty-badge ${qclass}">${i.qty}</span>
-          <button class="qty-btn" onclick="changeQty(${i.id},+1)">+</button>
-        </div>
-        <button class="icon-btn" style="font-size:11px;" onclick="event.stopPropagation();addToShopping(${i.id})">🛒</button>
-        <button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="event.stopPropagation();deleteInventory(${i.id})">🗑️</button>
-      </div>
-    </div>`;
+    return `<div class="irow" onclick="startEditInv(${i.id})"><div class="irow-left"><span class="irow-emoji">${escH(i.emoji)}</span><div class="irow-info"><div class="irow-name">${escH(i.name)}</div><div class="irow-sub">${escH(i.cat)}</div></div></div><div class="irow-right"><div class="qty-ctrl" onclick="event.stopPropagation()"><button class="qty-btn" onclick="changeQty(${i.id},-1)">−</button><span class="qty-num qty-badge ${qclass}">${i.qty}</span><button class="qty-btn" onclick="changeQty(${i.id},+1)">+</button></div><button class="icon-btn" style="font-size:11px;" onclick="event.stopPropagation();addToShopping(${i.id})">🛒</button><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="event.stopPropagation();deleteInventory(${i.id})">🗑️</button></div></div>`;
   }).join('');
 }
 
 window.setInvCat=function(cat){ activeInvCat=cat; renderInventory(); };
-
 window.addToShopping=function(invId){
-  var item=localData.inventory.find(i=>i.id===invId);
-  if(!item)return;
+  var item=localData.inventory.find(i=>i.id===invId); if(!item)return;
   if(localData.shopping.find(s=>s.name===item.name&&!s.bought)){ showToast('⚠️ موجود في قائمة التسوق'); return; }
   localData.shopping.push({id:Date.now(),name:item.name,emoji:item.emoji,qty:1,price:0,bought:false});
   saveToCloud(); renderShopping(); showToast('🛒 أضيف للتسوق: '+item.name);
 };
-
 window.addLowStockToShopping=function(){
-  var low=localData.inventory.filter(i=>i.qty<=i.minQty);
-  var added=0;
-  low.forEach(function(item){
-    if(!localData.shopping.find(s=>s.name===item.name&&!s.bought)){
-      localData.shopping.push({id:Date.now()+Math.random(),name:item.name,emoji:item.emoji,qty:1,price:0,bought:false});
-      added++;
-    }
-  });
-  if(added>0){ saveToCloud(); renderShopping(); showToast('🛒 أضيف '+added+' صنف للتسوق'); }
-  else showToast('كل الأصناف الناقصة موجودة في القائمة');
+  var low=localData.inventory.filter(i=>i.qty<=i.minQty), added=0;
+  low.forEach(function(item){ if(!localData.shopping.find(s=>s.name===item.name&&!s.bought)){ localData.shopping.push({id:Date.now()+Math.random(),name:item.name,emoji:item.emoji,qty:1,price:0,bought:false}); added++; } });
+  if(added>0){ saveToCloud(); renderShopping(); showToast('🛒 أضيف '+added+' صنف للتسوق'); } else showToast('كل الأصناف الناقصة موجودة في القائمة');
 };
 
-// ── REQUESTS ──
 window.addRequest=async function(){
-  var type=document.getElementById('req-type').value;
-  var item=document.getElementById('req-item').value.trim();
-  var note=document.getElementById('req-note').value.trim();
+  var type=document.getElementById('req-type').value, item=document.getElementById('req-item').value.trim(), note=document.getElementById('req-note').value.trim();
   if(!item)return;
   var req={id:Date.now(),type,item,note,from:currentUser.displayName||'أحد',status:'pending',time:timeStr(),date:todayStr()};
-  localData.requests.unshift(req);
-  document.getElementById('req-item').value=''; document.getElementById('req-note').value='';
-  await saveToCloud();
-  renderRequests();
-  showToast('📤 تم إرسال الطلب');
+  localData.requests.unshift(req); document.getElementById('req-item').value=''; document.getElementById('req-note').value='';
+  await saveToCloud(); renderRequests(); showToast('📤 تم إرسال الطلب');
   await sendNotification('طلب جديد: '+type, req.from, item+(note?' — '+note:''));
+  var waMessage = '🏠 *طلب جديد في بيتنا*\nالنوع: ' + type + '\nالتفاصيل: ' + item + (note?'\nملاحظة: '+note:'') + '\nبواسطة: ' + req.from;
+  sendWhatsApp(waMessage);
 };
 
 window.updateRequest=function(id, status){
-  var req=localData.requests.find(r=>r.id===id);
-  if(!req)return;
-  req.status=status;
-  saveToCloud(); renderRequests();
-  if(status==='done') showToast('✅ تم إنجاز الطلب');
+  var req=localData.requests.find(r=>r.id===id); if(!req)return;
+  req.status=status; saveToCloud(); renderRequests(); if(status==='done') showToast('✅ تم إنجاز الطلب');
 };
-
 window.deleteRequest=function(id){ customConfirm('حذف هذا الطلب؟',function(){ localData.requests=localData.requests.filter(r=>r.id!==id); saveToCloud(); renderRequests(); }); };
-
 window.clearDoneRequests=function(){ customConfirm('مسح جميع الطلبات المنجزة؟',function(){ localData.requests=localData.requests.filter(r=>r.status!=='done'); saveToCloud(); renderRequests(); showToast('🗑️ تم المسح'); }); };
 
 function renderRequests(){
-  var pending=localData.requests.filter(r=>r.status==='pending').length;
-  var done=localData.requests.filter(r=>r.status==='done'&&r.date===todayStr()).length;
-  document.getElementById('req-pending').textContent=pending;
-  document.getElementById('req-done').textContent=done;
-  document.getElementById('req-total').textContent=localData.requests.length;
-
-  var badge=document.getElementById('req-badge');
-  badge.innerHTML=pending>0?`<span class="notif-badge">${pending}</span>`:'';
-
-  var el=document.getElementById('req-list');
-  if(localData.requests.length===0){ el.innerHTML='<div class="empty">ما في طلبات بعد</div>'; return; }
-
+  var pending=localData.requests.filter(r=>r.status==='pending').length, done=localData.requests.filter(r=>r.status==='done'&&r.date===todayStr()).length;
+  document.getElementById('req-pending').textContent=pending; document.getElementById('req-done').textContent=done; document.getElementById('req-total').textContent=localData.requests.length;
+  var badge=document.getElementById('req-badge'); badge.innerHTML=pending>0?`<span class="notif-badge">${pending}</span>`:'';
+  var el=document.getElementById('req-list'); if(localData.requests.length===0){ el.innerHTML='<div class="empty">ما في طلبات بعد</div>'; return; }
   const TYPE_EMOJI={وجبة:'🍽️',سناك:'🍪',مشروب:'☕','طلب عام':'📝'};
   el.innerHTML=localData.requests.map(function(r){
-    if (editingReq === r.id) {
-      return '<div class="req-card"><div class="edit-row" style="padding:12px 15px;">' +
-        '<select id="er-type-' + r.id + '" style="max-width:120px;"><option' + (r.type === 'وجبة' ? ' selected' : '') + '>وجبة</option><option' + (r.type === 'سناك' ? ' selected' : '') + '>سناك</option><option' + (r.type === 'مشروب' ? ' selected' : '') + '>مشروب</option><option' + (r.type === 'طلب عام' ? ' selected' : '') + '>طلب عام</option></select>' +
-        '<input type="text" id="er-item-' + r.id + '" value="' + escH(r.item) + '" style="flex:1;min-width:100px;"/>' +
-        '<input type="text" id="er-note-' + r.id + '" value="' + escH(r.note) + '" placeholder="ملاحظة" style="flex:1;min-width:80px;"/>' +
-        '<button class="save-btn" onclick="saveEditReq(' + r.id + ')">✓</button>' +
-        '<button class="cancel-btn2" onclick="cancelEditReq()">✕</button>' +
-        '</div></div>';
-    }
-    var stClass=r.status==='pending'?'sb-pending':r.status==='done'?'sb-done':'sb-cancelled';
-    var stText=r.status==='pending'?'معلق':r.status==='done'?'منجز':'ملغي';
-    return `<div class="req-card">
-      <div class="req-head">
-        <div class="req-info">
-          <div class="req-title">${TYPE_EMOJI[r.type]||'📝'} ${escH(r.item)}</div>
-          <div class="req-meta">من: ${escH(r.from)} • ${r.time} • ${r.date}${r.note?' • '+escH(r.note):''} <span class="status-badge ${stClass}">${stText}</span></div>
-        </div>
-        <div class="req-actions">
-          ${r.status==='pending'?`<button class="req-btn" onclick="startEditReq(${r.id})">✏️</button><button class="req-btn accept" onclick="updateRequest(${r.id},'done')">✅</button><button class="req-btn reject" onclick="updateRequest(${r.id},'cancelled')">❌</button>`:''}
-          <button class="req-btn" onclick="deleteRequest(${r.id})">🗑️</button>
-        </div>
-      </div>
-    </div>`;
+    if (editingReq === r.id) { return '<div class="req-card"><div class="edit-row" style="padding:12px 15px;"><select id="er-type-' + r.id + '" style="max-width:120px;"><option' + (r.type === 'وجبة' ? ' selected' : '') + '>وجبة</option><option' + (r.type === 'سناك' ? ' selected' : '') + '>سناك</option><option' + (r.type === 'مشروب' ? ' selected' : '') + '>مشروب</option><option' + (r.type === 'طلب عام' ? ' selected' : '') + '>طلب عام</option></select><input type="text" id="er-item-' + r.id + '" value="' + escH(r.item) + '" style="flex:1;min-width:100px;"/><input type="text" id="er-note-' + r.id + '" value="' + escH(r.note) + '" placeholder="ملاحظة" style="flex:1;min-width:80px;"/><button class="save-btn" onclick="saveEditReq(' + r.id + ')">✓</button><button class="cancel-btn2" onclick="cancelEditReq()">✕</button></div></div>'; }
+    var stClass=r.status==='pending'?'sb-pending':r.status==='done'?'sb-done':'sb-cancelled', stText=r.status==='pending'?'معلق':r.status==='done'?'منجز':'ملغي';
+    return `<div class="req-card"><div class="req-head"><div class="req-info"><div class="req-title">${TYPE_EMOJI[r.type]||'📝'} ${escH(r.item)}</div><div class="req-meta">من: ${escH(r.from)} • ${r.time} • ${r.date}${r.note?' • '+escH(r.note):''} <span class="status-badge ${stClass}">${stText}</span></div></div><div class="req-actions">${r.status==='pending'?`<button class="req-btn" onclick="startEditReq(${r.id})">✏️</button><button class="req-btn accept" onclick="updateRequest(${r.id},'done')">✅</button><button class="req-btn reject" onclick="updateRequest(${r.id},'cancelled')">❌</button>`:''}<button class="req-btn" onclick="deleteRequest(${r.id})">🗑️</button></div></div></div>`;
   }).join('');
 }
 
-// ── SHOPPING ──
 window.addShoppingItem=function(){
-  var name=document.getElementById('shop-name').value.trim();
-  var qty=parseFloat(document.getElementById('shop-qty').value)||1;
-  var price=parseFloat(document.getElementById('shop-price').value)||0;
+  var name=document.getElementById('shop-name').value.trim(), qty=parseFloat(document.getElementById('shop-qty').value)||1, price=parseFloat(document.getElementById('shop-price').value)||0;
   if(!name)return;
-  localData.shopping.push({id:Date.now(),name,emoji:'🛒',qty,price,bought:false});
-  document.getElementById('shop-name').value=''; document.getElementById('shop-qty').value=''; document.getElementById('shop-price').value='';
+  localData.shopping.push({id:Date.now(),name,emoji:'🛒',qty,price,bought:false}); document.getElementById('shop-name').value=''; document.getElementById('shop-qty').value=''; document.getElementById('shop-price').value='';
   saveToCloud(); renderShopping();
 };
-
 window.toggleBought=function(id){
-  var item=localData.shopping.find(i=>i.id===id);
-  if(!item)return;
-  item.bought=!item.bought;
-  saveToCloud(); renderShopping();
+  var item=localData.shopping.find(i=>i.id===id); if(!item)return;
+  item.bought=!item.bought; saveToCloud(); renderShopping();
 };
-
 window.deleteShopItem=function(id){ customConfirm('حذف هذا الصنف؟',function(){ localData.shopping=localData.shopping.filter(i=>i.id!==id); saveToCloud(); renderShopping(); }); };
-
 window.clearBoughtItems=function(){ customConfirm('مسح كل الأصناف المشتراة؟',function(){
-  // update inventory quantities
-  localData.shopping.filter(s=>s.bought).forEach(function(s){
-    var inv=localData.inventory.find(i=>i.name===s.name);
-    if(inv) inv.qty+=s.qty;
-  });
-  localData.shopping=localData.shopping.filter(s=>!s.bought);
-  saveToCloud(); renderShopping(); renderInventory(); showToast('✅ تم تحديث المخزون');
+  localData.shopping.filter(s=>s.bought).forEach(function(s){ var inv=localData.inventory.find(i=>i.name===s.name); if(inv) inv.qty+=s.qty; });
+  localData.shopping=localData.shopping.filter(s=>!s.bought); saveToCloud(); renderShopping(); renderInventory(); showToast('✅ تم تحديث المخزون');
 }); };
 
 function renderShopping(){
-  var total=localData.shopping.length;
-  var done=localData.shopping.filter(s=>s.bought).length;
-  var cost=localData.shopping.filter(s=>!s.bought).reduce((sum,s)=>sum+(s.price*s.qty),0);
-  document.getElementById('shop-total').textContent=total;
-  document.getElementById('shop-done').textContent=done;
-  document.getElementById('shop-cost').textContent=fmt(cost)+' د.ك';
-
-  var el=document.getElementById('shop-list');
-  if(total===0){ el.innerHTML='<div class="empty">قائمة التسوق فارغة</div>'; return; }
-
-  var pending=localData.shopping.filter(s=>!s.bought);
-  var bought=localData.shopping.filter(s=>s.bought);
-  var all=[...pending,...bought];
-
-  el.innerHTML=all.map(function(s){
-    return `<div class="irow" style="${s.bought?'opacity:0.5;text-decoration:line-through;':''}">
-      <div class="irow-left" onclick="toggleBought(${s.id})" style="cursor:pointer;">
-        <span class="irow-emoji">${s.bought?'✅':'🛒'}</span>
-        <div class="irow-info">
-          <div class="irow-name">${escH(s.name)}</div>
-          <div class="irow-sub">الكمية: ${s.qty}${s.price>0?' • '+fmt(s.price*s.qty)+' د.ك':''}</div>
-        </div>
-      </div>
-      <div class="irow-right">
-        <button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteShopItem(${s.id})">🗑️</button>
-      </div>
-    </div>`;
-  }).join('');
+  var total=localData.shopping.length, done=localData.shopping.filter(s=>s.bought).length, cost=localData.shopping.filter(s=>!s.bought).reduce((sum,s)=>sum+(s.price*s.qty),0);
+  document.getElementById('shop-total').textContent=total; document.getElementById('shop-done').textContent=done; document.getElementById('shop-cost').textContent=fmt(cost)+' د.ك';
+  var el=document.getElementById('shop-list'); if(total===0){ el.innerHTML='<div class="empty">قائمة التسوق فارغة</div>'; return; }
+  var pending=localData.shopping.filter(s=>!s.bought), bought=localData.shopping.filter(s=>s.bought), all=[...pending,...bought];
+  el.innerHTML=all.map(function(s){ return `<div class="irow" style="${s.bought?'opacity:0.5;text-decoration:line-through;':''}"><div class="irow-left" onclick="toggleBought(${s.id})" style="cursor:pointer;"><span class="irow-emoji">${s.bought?'✅':'🛒'}</span><div class="irow-info"><div class="irow-name">${escH(s.name)}</div><div class="irow-sub">الكمية: ${s.qty}${s.price>0?' • '+fmt(s.price*s.qty)+' د.ك':''}</div></div></div><div class="irow-right"><button class="icon-btn" style="color:var(--red);font-size:11px;" onclick="deleteShopItem(${s.id})">🗑️</button></div></div>`; }).join('');
 }
 
-// ── RENDER ALL ──
 function renderAll(){ renderInventory(); renderRequests(); renderShopping(); }
 
-// ── AUTOCOMPLETE ──
-function getACData(type){
-  if(type==='inv-name') return [...new Set(localData.inventory.map(i=>i.name))];
-  if(type==='req-item') return [...new Set(localData.requests.map(r=>r.item))];
-  return [];
-}
-
+function getACData(type){ if(type==='inv-name') return [...new Set(localData.inventory.map(i=>i.name))]; if(type==='req-item') return [...new Set(localData.requests.map(r=>r.item))]; return []; }
 function setupAC(){
   if(!acListEl){ acListEl=document.createElement('div'); acListEl.className='ac-list'; document.body.appendChild(acListEl); }
   document.querySelectorAll('.ac-inp').forEach(function(inp){
     if(inp._ac)return; inp._ac=true;
     var type=inp.getAttribute('data-ac');
     inp.addEventListener('input',function(){
-      var val=inp.value.trim().toLowerCase();
-      acListEl.innerHTML='';
-      if(!val){ acListEl.classList.remove('open'); return; }
+      var val=inp.value.trim().toLowerCase(); acListEl.innerHTML=''; if(!val){ acListEl.classList.remove('open'); return; }
       var matches=getACData(type).filter(h=>h.toLowerCase().includes(val)&&h.toLowerCase()!==val);
       if(!matches.length){ acListEl.classList.remove('open'); return; }
       matches.slice(0,7).forEach(function(m){
-        var item=document.createElement('div'); item.className='ac-item';
-        var idx=m.toLowerCase().indexOf(val);
+        var item=document.createElement('div'); item.className='ac-item'; var idx=m.toLowerCase().indexOf(val);
         item.innerHTML=escH(m.substring(0,idx))+'<b>'+escH(m.substring(idx,idx+val.length))+'</b>'+escH(m.substring(idx+val.length));
         function pick(e){ e.preventDefault(); inp.value=m; acListEl.classList.remove('open'); inp.focus(); }
-        item.addEventListener('mousedown',pick); item.addEventListener('touchend',pick);
-        acListEl.appendChild(item);
+        item.addEventListener('mousedown',pick); item.addEventListener('touchend',pick); acListEl.appendChild(item);
       });
-      var rect=inp.getBoundingClientRect();
-      acListEl.style.left=rect.left+'px';
-      acListEl.style.width=Math.max(rect.width,220)+'px';
-      var below=window.innerHeight-rect.bottom;
-      if(below>160){ acListEl.style.top=(rect.bottom+2)+'px'; acListEl.style.bottom='auto'; }
-      else{ acListEl.style.bottom=(window.innerHeight-rect.top+2)+'px'; acListEl.style.top='auto'; }
+      var rect=inp.getBoundingClientRect(); acListEl.style.left=rect.left+'px'; acListEl.style.width=Math.max(rect.width,220)+'px';
+      var below=window.innerHeight-rect.bottom; if(below>160){ acListEl.style.top=(rect.bottom+2)+'px'; acListEl.style.bottom='auto'; } else{ acListEl.style.bottom=(window.innerHeight-rect.top+2)+'px'; acListEl.style.top='auto'; }
       acListEl.classList.add('open');
     });
     inp.addEventListener('blur',function(){ setTimeout(()=>acListEl.classList.remove('open'),200); });
@@ -1009,7 +775,6 @@ function setupAC(){
   });
 }
 
-// ── SEARCH ──
 document.getElementById('search-inv').addEventListener('input',renderInventory);
 </script>
 </body>
