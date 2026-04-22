@@ -389,6 +389,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebas
 import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
+// 1. الإعدادات الأساسية
 const firebaseConfig={apiKey:"AIzaSyDMSFTbFGetq1WsCo-mVsNUbHVcqhC4Tow",authDomain:"budget-home-1.firebaseapp.com",projectId:"budget-home-1",storageBucket:"budget-home-1.firebasestorage.app",messagingSenderId:"1082972153053",appId:"1:1082972153053:web:ba31f2c4da3cf95e35e734"};
 const fbApp=initializeApp(firebaseConfig);
 const db=getFirestore(fbApp);
@@ -398,6 +399,7 @@ gProvider.setCustomParameters({prompt:'select_account'});
 
 const EJS_SVC='service_8umlngb', EJS_TPL='template_b712oer', EJS_KEY='EmfI9mvmjhSn8x3ey';
 
+// 2. دوال التنبيهات والواتساب
 async function sendNotification(type, fromName, message){
   try{
     var line='━━━━━━━━━━━━━━━━━━━';
@@ -406,27 +408,17 @@ async function sendNotification(type, fromName, message){
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
-        service_id:EJS_SVC,
-        template_id:EJS_TPL,
-        user_id:EJS_KEY,
-        template_params:{
-          type:'🏠 '+type,
-          from_name:fromName,
-          message:body,
-          time:new Date().toLocaleString('ar-KW'),
-          name:fromName
-        }
+        service_id:EJS_SVC, template_id:EJS_TPL, user_id:EJS_KEY,
+        template_params:{ type:'🏠 '+type, from_name:fromName, message:body, time:new Date().toLocaleString('ar-KW'), name:fromName }
       })
     });
   }catch(e){ console.log('Email error:',e); }
 }
 
-// ── WhatsApp CallMeBot ──
 const WA_PHONE_HAMOUD = '+96597965646'; 
 const WA_API_HAMOUD = '5745517'; 
-
-const WA_PHONE_ARWA = '+965YYYYYYYY'; // استبدل برقم أروى لاحقاً
-const WA_API_ARWA = 'YOUR_API_KEY_2'; // استبدل بمفتاح أروى لاحقاً
+const WA_PHONE_ARWA = '+965YYYYYYYY'; 
+const WA_API_ARWA = 'YOUR_API_KEY_2'; 
 
 function sendWhatsApp(message, target = 'both') {
   try {
@@ -442,6 +434,29 @@ function sendWhatsApp(message, target = 'both') {
   } catch(e) { console.log('WhatsApp error:', e); }
 }
 
+// 3. دوال تسجيل الدخول والخروج (النسخة المصححة)
+window.signInWithGoogle=async function(){ 
+  try{ 
+    await signInWithPopup(auth,gProvider); 
+  }catch(e){ 
+    console.error("Login error:", e);
+    alert('تعذّر تسجيل الدخول: ' + e.message); 
+  } 
+};
+
+window.signOutUser=async function(){ 
+  if(unsub)unsub(); 
+  currentUser=null; 
+  unlockedTabs={حمود:false,أروى:false}; 
+  await signOut(auth); 
+  document.getElementById('app-screen').style.display='none'; 
+  document.getElementById('login-screen').style.display='flex'; 
+  document.getElementById('user-dropdown').classList.remove('open'); 
+};
+
+window.toggleUserMenu=function(){ document.getElementById('user-dropdown').classList.toggle('open'); };
+
+// متغيرات البرنامج الأساسية
 const PINS = { 'حمود': '2580', 'أروى': '223223' };
 const TASK_CATS = ['الكل', 'نشاط منزلي', 'نشاط اجتماعي', 'ترفيه', 'دراسة', 'عمل', 'أخرى'];
 let unlockedTabs = { حمود: false, أروى: false };
@@ -452,19 +467,6 @@ let currentUser=null, unsub=null;
 let invSort=0, editingInv=null, editingShop=null, editingReq=null;
 let activeInvCat='الكل';
 let acListEl=null;
-
-window.setTheme=function(t){
-  document.body.className=document.body.className.replace(/theme-\S+/g,'').trim();
-  document.body.classList.add('theme-'+t);
-  document.querySelectorAll('.sw').forEach(s=>s.classList.remove('active'));
-  var sw=document.getElementById('sw-'+t); if(sw)sw.classList.add('active');
-  try{localStorage.setItem('kit-theme',t);}catch(e){}
-};
-(function(){ window.setTheme(localStorage.getItem('kit-theme')||'light'); })();
-
-window.signInWithGoogle=async function(){ try{ await signInWithPopup(auth,gProvider); }catch(e){ alert('تعذّر تسجيل الدخول.'); } };
-window.signOutUser=async function(){ if(unsub)unsub(); currentUser=null; unlockedTabs={حمود:false,أروى:false}; await signOut(auth); document.getElementById('app-screen').style.display='none'; document.getElementById('login-screen').style.display='flex'; document.getElementById('user-dropdown').classList.remove('open'); };
-window.toggleUserMenu=function(){ document.getElementById('user-dropdown').classList.toggle('open'); };
 
 document.addEventListener('click',function(e){
   var dd=document.getElementById('user-dropdown'), av=document.getElementById('user-avatar');
